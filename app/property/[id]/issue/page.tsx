@@ -1,9 +1,11 @@
 import { PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
 import { submitIssueAction } from "@/lib/actions";
 import { getProperty } from "@/lib/data";
+import { logAnalyticsEvent } from "@/lib/events";
 
 export default async function IssuePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  await logAnalyticsEvent("issue_started", { property_id: id });
   const property = await getProperty(id);
   const action = submitIssueAction.bind(null, id);
 

@@ -7,7 +7,11 @@ const exports = [
   ["Reviews", "reviews"],
   ["Issues", "maintenance_issues"],
   ["Claims", "property_claims"],
-  ["Property manager intake responses", "property_manager_intake"]
+  ["Property manager intake responses", "property_manager_intake"],
+  ["Housing events", "housing_events"],
+  ["Onboarding responses", "onboarding_responses"],
+  ["Feedback responses", "feedback_responses"],
+  ["Referrals", "referrals"]
 ] as const;
 
 export default async function AdminPage() {
@@ -22,25 +26,49 @@ export default async function AdminPage() {
   }
   const adminData = data as {
     allowed: true;
-    counts: { properties: number; reviews: number; issues: number; claims: number; intakes: number };
+    counts: {
+      properties: number;
+      reviews: number;
+      issues: number;
+      claims: number;
+      intakes: number;
+      housingEvents: number;
+      verifiedEvents: number;
+      feedback: number;
+      averageReviewsPerProperty: number;
+      averageEventsPerProperty: number;
+    };
     recentReviews: Record<string, string | number | null>[];
     recentIssues: Record<string, string | number | null>[];
     pendingClaims: Record<string, string | number | null>[];
+    recentHousingEvents: Record<string, string | number | boolean | null>[];
+    recentFeedback: Record<string, string | number | null>[];
+    dailyGrowth: Record<string, string | number | null>[];
+    topUsers: Record<string, string | number | null>[];
+    topCities: Record<string, string | number | null>[];
   };
 
   return (
     <PageShell>
-      <SectionHeader eyebrow="Admin" title="DomusGraph research dashboard" body="Monitor traction, review pending submissions, and export structured MVP data." />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <SectionHeader eyebrow="Graph growth" title="Verified Housing Events dashboard" body="Monitor Housing Graph growth, trust signals, and contribution momentum." />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Total properties" value={adminData.counts.properties} />
         <Stat label="Total reviews" value={adminData.counts.reviews} />
+        <Stat label="Total housing events" value={adminData.counts.housingEvents} />
+        <Stat label="Verified events" value={adminData.counts.verifiedEvents} />
         <Stat label="Maintenance issues" value={adminData.counts.issues} />
         <Stat label="Landlord claims" value={adminData.counts.claims} />
         <Stat label="Manager submissions" value={adminData.counts.intakes} />
+        <Stat label="Feedback answers" value={adminData.counts.feedback} />
+        <Stat label="Avg reviews/property" value={adminData.counts.averageReviewsPerProperty} />
+        <Stat label="Avg events/property" value={adminData.counts.averageEventsPerProperty} />
       </div>
 
       <section className="mt-8 panel">
-        <h2 className="text-xl font-semibold text-ink">Exports</h2>
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <h2 className="text-xl font-semibold text-ink">Exports and discovery</h2>
+          <Link href="/admin/feedback" className="button-secondary">Browse feedback</Link>
+        </div>
         <div className="mt-4 flex flex-wrap gap-3">
           {exports.map(([label, table]) => (
             <Link key={table} href={`/admin/export?table=${table}`} className="button-secondary">{label} CSV</Link>
@@ -49,9 +77,14 @@ export default async function AdminPage() {
       </section>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <AdminList title="Recent housing events" rows={adminData.recentHousingEvents.map((item) => `${item.event_type} · ${item.actor_type} · ${item.is_verified ? "verified" : "unverified"}`)} />
+        <AdminList title="Daily growth" rows={adminData.dailyGrowth.map((item) => `${item.event_day} · ${item.total_events} events · ${item.verified_events} verified`)} />
+        <AdminList title="Top growing cities" rows={adminData.topCities.map((item) => `${item.city} · ${item.event_count} events · ${item.property_count} properties`)} />
+        <AdminList title="Top contributing users" rows={adminData.topUsers.map((item) => `${item.actor_type} · ${item.contribution_count} contributions · ${item.verified_count} verified`)} />
         <AdminList title="Recent reviews" rows={adminData.recentReviews.map((item) => `${item.overall_rating}/5 · ${item.moderation_status} · ${new Date(String(item.created_at ?? "")).toLocaleDateString("en-GB")}`)} />
         <AdminList title="Recent issues" rows={adminData.recentIssues.map((item) => `${item.issue_type} · ${item.severity} · ${item.moderation_status}`)} />
         <AdminList title="Pending claims" rows={adminData.pendingClaims.map((item) => `${item.name} · ${item.role} · ${item.portfolio_size}`)} />
+        <AdminList title="Recent feedback" rows={adminData.recentFeedback.map((item) => `${item.source} · ${String(item.answer ?? "").slice(0, 80)}`)} />
       </div>
     </PageShell>
   );

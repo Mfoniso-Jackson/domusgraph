@@ -1,9 +1,11 @@
 import { PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
 import { submitClaimAction } from "@/lib/actions";
 import { getProperty } from "@/lib/data";
+import { logAnalyticsEvent } from "@/lib/events";
 
 export default async function ClaimPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  await logAnalyticsEvent("claim_started", { property_id: id });
   const property = await getProperty(id);
   const action = submitClaimAction.bind(null, id);
 

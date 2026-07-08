@@ -3,14 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient, isConfigured } from "@/lib/supabase";
-import { claimSchema, formObject, issueSchema, managerIntakeSchema, propertySchema, reviewSchema } from "@/lib/schemas";
+import { claimSchema, feedbackSchema, formObject, issueSchema, managerIntakeSchema, onboardingSchema, propertySchema, referralSchema, reviewSchema } from "@/lib/schemas";
 import { getCurrentUser } from "@/lib/data";
-
-async function logEvent(event_name: string, payload: Record<string, unknown> = {}) {
-  if (!isConfigured()) return;
-  const supabase = createSupabaseAdminClient();
-  await supabase.from("analytics_events").insert({ event_name, payload });
-}
+import { logAnalyticsEvent, logHousingEvent } from "@/lib/events";
 
 function requireSupabase() {
   if (!isConfigured()) {
@@ -29,14 +24,15 @@ export async function createPropertyAction(formData: FormData) {
     .select("id")
     .single();
   if (error) throw error;
-  await logEvent("property_created", { property_id: data.id, postcode: parsed.postcode });
+  await logAnalyticsEvent("property_created", { property_id: data.id, postcode: parsed.postcode });
+  await logHousingEvent({ propertyId: data.id, eventType: "property_created", metadata: { postcode: parsed.postcode, property_type: parsed.property_type } });
   revalidatePath("/search");
   redirect(`/property/${data.id}`);
 }
 
 export async function logSearchAction(formData: FormData) {
   const query = String(formData.get("q") ?? "");
-  await logEvent("property_search", { query });
+  await logAnalyticsEvent("property_search", { query });
   redirect(`/search?q=${encodeURIComponent(query)}`);
 }
 
@@ -51,9 +47,15 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
     moderation_status: "pending"
   });
   if (error) throw error;
-  await logEvent("review_submitted", { property_id: propertyId });
+  await logAnalyticsEvent("review_completed", { property_id: propertyId });
+  await logHousingEvent({
+    propertyId,
+    actorType: "renter",
+    eventType: "review_submitted",
+    metadata: { overall_rating: parsed.overall_rating, would_rent_again: parsed.would_rent_again }
+  });
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/property/${propertyId}`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=review`);
 }
 
 export async function submitIssueAction(propertyId: string, formData: FormData) {
@@ -67,9 +69,15 @@ export async function submitIssueAction(propertyId: string, formData: FormData) 
     moderation_status: "pending"
   });
   if (error) throw error;
-  await logEvent("issue_reported", { property_id: propertyId, issue_type: parsed.issue_type, severity: parsed.severity });
+  await logAnalyticsEvent("issue_completed", { property_id: propertyId, issue_type: parsed.issue_type, severity: parsed.severity });
+  await logHousingEvent({
+    propertyId,
+    actorType: "renter",
+    eventType: parsed.status === "Resolved" ? "maintenance_issue_resolved" : "maintenance_issue_reported",
+    metadata: { issue_type: parsed.issue_type, severity: parsed.severity, status: parsed.status, response_time: parsed.response_time }
+  });
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/property/${propertyId}`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=issue`);
 }
 
 export async function submitClaimAction(propertyId: string, formData: FormData) {
@@ -83,9 +91,15 @@ export async function submitClaimAction(propertyId: string, formData: FormData) 
     claim_status: "pending"
   });
   if (error) throw error;
-  await logEvent("property_claim_submitted", { property_id: propertyId, role: parsed.role, portfolio_size: parsed.portfolio_size });
+  await logAnalyticsEvent("claim_completed", { property_id: propertyId, role: parsed.role, portfolio_size: parsed.portfolio_size });
+  await logHousingEvent({
+    propertyId,
+    actorType: parsed.role === "Property manager" ? "property_manager" : parsed.role === "Letting agent" ? "letting_agent" : "landlord",
+    eventType: "property_claimed",
+    metadata: { role: parsed.role, portfolio_size: parsed.portfolio_size, maintenance_workflow: parsed.maintenance_workflow }
+  });
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/property/${propertyId}`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=claim`);
 }
 
 export async function submitManagerIntakeAction(formData: FormData) {
@@ -93,6 +107,60 @@ export async function submitManagerIntakeAction(formData: FormData) {
   const supabase = requireSupabase();
   const { error } = await supabase.from("property_manager_intake").insert(parsed);
   if (error) throw error;
-  await logEvent("property_manager_intake_submitted", { units_managed: parsed.units_managed });
-  redirect("/property-manager?submitted=1");
+  await logAnalyticsEvent("signup_completed", { units_managed: parsed.units_managed });
+  await logHousingEvent({
+    actorType: "property_manager",
+    eventType: "property_manager_signup",
+    metadata: { units_managed: parsed.units_managed, challenge: parsed.biggest_operational_challenge }
+  });
+  redirect("/contribute/next?event=manager");
+}
+
+export async function submitOnboardingAction(formData: FormData) {
+  const parsed = onboardingSchema.parse(formObject(formData));
+  const supabase = requireSupabase();
+  const user = await getCurrentUser();
+  const { error } = await supabase.from("onboarding_responses").insert({
+    user_id: user?.id ?? null,
+    user_type: parsed.user_type,
+    answers: parsed
+  });
+  if (error) throw error;
+  await logAnalyticsEvent("signup_completed", { user_type: parsed.user_type });
+  redirect("/contribute/next?event=onboarding");
+}
+
+export async function submitFeedbackAction(formData: FormData) {
+  const parsed = feedbackSchema.parse(formObject(formData));
+  const supabase = requireSupabase();
+  const user = await getCurrentUser();
+  const { error } = await supabase.from("feedback_responses").insert({
+    user_id: user?.id ?? null,
+    property_id: parsed.property_id || null,
+    source: parsed.source,
+    answer: parsed.answer
+  });
+  if (error) throw error;
+  await logAnalyticsEvent("feedback_submitted", { source: parsed.source, property_id: parsed.property_id });
+  await logHousingEvent({ propertyId: parsed.property_id || null, eventType: "feedback_submitted", metadata: { source: parsed.source } });
+  redirect(`/contribute/next${parsed.property_id ? `?propertyId=${parsed.property_id}&event=feedback` : "?event=feedback"}`);
+}
+
+export async function createReferralAction(formData: FormData) {
+  const parsed = referralSchema.parse(formObject(formData));
+  const supabase = requireSupabase();
+  const user = await getCurrentUser();
+  const code = crypto.randomUUID().slice(0, 8);
+  const { error } = await supabase.from("referrals").insert({
+    property_id: parsed.property_id || null,
+    created_by: user?.id ?? null,
+    invite_type: parsed.invite_type,
+    recipient_email: parsed.recipient_email || null,
+    referral_code: code,
+    reputation_points_awarded: 5
+  });
+  if (error) throw error;
+  await logAnalyticsEvent("referral_created", { invite_type: parsed.invite_type, property_id: parsed.property_id });
+  await logHousingEvent({ propertyId: parsed.property_id || null, eventType: "referral_created", metadata: { invite_type: parsed.invite_type } });
+  redirect(`/invite/${code}`);
 }

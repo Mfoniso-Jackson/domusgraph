@@ -24,6 +24,7 @@ export default function HomePage() {
             <Link href="/search" className="button-primary">Search a property</Link>
             <Link href="/search" className="button-secondary">Review a property</Link>
             <Link href="/search" className="button-secondary">Claim a property</Link>
+            <Link href="/onboarding" className="button-secondary">Start onboarding</Link>
           </div>
         </div>
         <div className="rounded border border-moss/15 bg-white p-6 shadow-soft">

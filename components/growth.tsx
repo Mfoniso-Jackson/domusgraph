@@ -1,0 +1,115 @@
+import Link from "next/link";
+import { CheckCircle2, Circle, ShieldCheck, TrendingUp } from "lucide-react";
+import { completionParts, getPropertyCompletion, getReputationScore, getTrustBadges, type CompletionInput } from "@/lib/growth";
+import { createReferralAction, submitFeedbackAction } from "@/lib/actions";
+
+export function CompletionScore({ property }: { property: CompletionInput }) {
+  const completion = getPropertyCompletion(property);
+  return (
+    <section className="panel">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-ink">Housing Profile Completeness</h2>
+          <p className="mt-1 text-sm text-moss">Complete profiles create stronger housing graph signals.</p>
+        </div>
+        <div className="text-3xl font-bold text-clay">{completion.score}%</div>
+      </div>
+      <div className="mt-4 h-2 rounded bg-mist">
+        <div className="h-2 rounded bg-clay" style={{ width: `${completion.score}%` }} />
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {completionParts.map((part) => {
+          const done = completion.checks[part.key];
+          return (
+            <div key={part.key} className="flex items-center gap-2 text-sm text-ink">
+              {done ? <CheckCircle2 className="h-4 w-4 text-leaf" /> : <Circle className="h-4 w-4 text-moss" />}
+              <span>{part.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export function TrustBadges({ verifiedReviews = 0, verifiedIssues = 0, claims = 0, approvedClaim = false }) {
+  const badges = getTrustBadges({ verifiedReviews, verifiedIssues, claims, approvedClaim });
+  if (!badges.length) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {badges.map((badge) => (
+        <span key={badge} className="inline-flex items-center gap-1 rounded bg-mist px-3 py-1 text-xs font-semibold text-ink">
+          <ShieldCheck className="h-3.5 w-3.5 text-clay" />
+          {badge}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function ContributorReputation({ reviews, issues, claims, events, referrals }: { reviews: number; issues: number; claims: number; events: number; referrals: number }) {
+  const reputation = getReputationScore({ reviews, issues, claims }) + referrals * 5;
+  return (
+    <section className="panel">
+      <div className="flex items-center gap-2">
+        <TrendingUp className="h-5 w-5 text-clay" />
+        <h2 className="text-xl font-semibold text-ink">Housing Reputation</h2>
+      </div>
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <Metric label="Housing Contributions" value={events + reviews + issues + claims} />
+        <Metric label="Verified Reviews" value={0} />
+        <Metric label="Verified Issues" value={0} />
+        <Metric label="Reputation Points" value={reputation} />
+      </div>
+      <p className="mt-4 text-sm text-moss">Reputation rewards useful, trustworthy housing contributions. No financial incentives, no noisy gamification.</p>
+    </section>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded border border-moss/15 bg-mist p-3">
+      <div className="text-xl font-bold text-ink">{value}</div>
+      <div className="text-sm text-moss">{label}</div>
+    </div>
+  );
+}
+
+export function ContributionPrompt({ propertyId, source = "post_action" }: { propertyId?: string; source?: string }) {
+  return (
+    <section className="panel">
+      <h2 className="text-2xl font-bold text-ink">Help future renters.</h2>
+      <p className="mt-2 text-sm text-moss">One more signal can make this property profile dramatically more useful.</p>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/review`}>Leave another review</Link> : <Link className="button-secondary" href="/search">Leave a review</Link>}
+        {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/issue`}>Report another issue</Link> : <Link className="button-secondary" href="/search">Report an issue</Link>}
+      </div>
+      <form action={createReferralAction} className="mt-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+        <input type="hidden" name="property_id" value={propertyId ?? ""} />
+        <label className="grid gap-2">
+          <span className="label">Invite someone</span>
+          <select name="invite_type" className="field" required>
+            <option>Previous tenant</option>
+            <option>Neighbour</option>
+            <option>Landlord</option>
+            <option>Property manager</option>
+          </select>
+        </label>
+        <label className="grid gap-2">
+          <span className="label">Email, optional</span>
+          <input className="field" type="email" name="recipient_email" placeholder="name@example.com" />
+        </label>
+        <button className="button-primary self-end" type="submit">Generate invite</button>
+      </form>
+      <form action={submitFeedbackAction} className="mt-5 grid gap-3">
+        <input type="hidden" name="property_id" value={propertyId ?? ""} />
+        <input type="hidden" name="source" value={source} />
+        <label className="grid gap-2">
+          <span className="label">If DomusGraph could solve one housing problem for you tomorrow, what would it be?</span>
+          <textarea className="field min-h-24" name="answer" required />
+        </label>
+        <button className="button-secondary w-fit" type="submit">Send feedback</button>
+      </form>
+    </section>
+  );
+}

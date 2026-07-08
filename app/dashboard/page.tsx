@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { EmptyState, PageShell, SectionHeader, Stat } from "@/components/ui";
 import { getDashboardData } from "@/lib/data";
+import { ContributorReputation, ContributionPrompt } from "@/components/growth";
 
 export default async function DashboardPage() {
-  const { user, reviews, issues, claims, propertyIds } = await getDashboardData();
+  const { user, reviews, issues, claims, propertyIds, housingEvents, referrals } = await getDashboardData();
 
   if (!user) {
     return (
@@ -22,10 +23,16 @@ export default async function DashboardPage() {
         <Stat label="Properties contributed to" value={propertyIds.size} />
         <Stat label="Claimed properties" value={claims.length} />
       </div>
+      <div className="mt-8">
+        <ContributorReputation reviews={reviews.length} issues={issues.length} claims={claims.length} events={housingEvents.length} referrals={referrals.length} />
+      </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <Activity title="Recent reviews" rows={reviews.map((item) => ({ id: item.id, label: `${item.overall_rating}/5 review`, href: `/property/${item.property_id}` }))} />
         <Activity title="Recent issues" rows={issues.map((item) => ({ id: item.id, label: `${item.issue_type} - ${item.status}`, href: `/property/${item.property_id}` }))} />
         <Activity title="Claims" rows={claims.map((item) => ({ id: item.id, label: `Claim ${item.claim_status}`, href: `/property/${item.property_id}` }))} />
+      </div>
+      <div className="mt-8">
+        <ContributionPrompt source="dashboard" />
       </div>
     </PageShell>
   );

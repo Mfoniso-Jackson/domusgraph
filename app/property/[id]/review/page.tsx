@@ -1,6 +1,7 @@
 import { PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
 import { submitReviewAction } from "@/lib/actions";
 import { getProperty } from "@/lib/data";
+import { logAnalyticsEvent } from "@/lib/events";
 
 const ratingOptions = ["1", "2", "3", "4", "5"];
 const issueFlags = [
@@ -15,6 +16,7 @@ const issueFlags = [
 
 export default async function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  await logAnalyticsEvent("review_started", { property_id: id });
   const property = await getProperty(id);
   const action = submitReviewAction.bind(null, id);
 

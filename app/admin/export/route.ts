@@ -2,7 +2,17 @@ import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/data";
 import { createSupabaseAdminClient, isAdminEmail } from "@/lib/supabase";
 
-const allowedTables = new Set(["properties", "reviews", "maintenance_issues", "property_claims", "property_manager_intake"]);
+const allowedTables = new Set([
+  "properties",
+  "reviews",
+  "maintenance_issues",
+  "property_claims",
+  "property_manager_intake",
+  "housing_events",
+  "onboarding_responses",
+  "feedback_responses",
+  "referrals"
+]);
 
 function toCsv(rows: Record<string, unknown>[]) {
   if (!rows.length) return "";
