@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState, PageShell, SectionHeader, Stat } from "@/components/ui";
 import { getAdminData } from "@/lib/data";
+import { moderateClaimAction, moderateIssueAction, moderateReviewAction } from "@/lib/actions";
 
 const exports = [
   ["Properties", "properties"],
@@ -20,7 +21,7 @@ export default async function AdminPage() {
   if (!data.allowed) {
     return (
       <PageShell>
-        <EmptyState title="Admin access required" body="This dashboard is protected by the ADMIN_EMAILS allowlist and an authenticated Supabase session." />
+        <EmptyState title="Admin access required" body="This dashboard is protected by the ADMIN_EMAILS allowlist and an authenticated Supabase session." href="/auth/sign-in?next=/admin" action="Sign in" />
       </PageShell>
     );
   }
@@ -40,6 +41,8 @@ export default async function AdminPage() {
     };
     recentReviews: Record<string, string | number | null>[];
     recentIssues: Record<string, string | number | null>[];
+    pendingReviews: Record<string, string | number | null>[];
+    pendingIssues: Record<string, string | number | null>[];
     pendingClaims: Record<string, string | number | null>[];
     recentHousingEvents: Record<string, string | number | boolean | null>[];
     recentFeedback: Record<string, string | number | null>[];
@@ -64,6 +67,27 @@ export default async function AdminPage() {
         <Stat label="Avg events/property" value={adminData.counts.averageEventsPerProperty} />
       </div>
 
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold text-ink">Moderation queue</h2>
+        <div className="mt-4 grid gap-6 lg:grid-cols-3">
+          <ModerationList
+            title={`Pending reviews (${adminData.pendingReviews.length})`}
+            rows={adminData.pendingReviews.map((item) => ({ id: String(item.id), label: `${item.overall_rating}/5 · ${String(item.review_text ?? "").slice(0, 60)}` }))}
+            action={moderateReviewAction}
+          />
+          <ModerationList
+            title={`Pending issues (${adminData.pendingIssues.length})`}
+            rows={adminData.pendingIssues.map((item) => ({ id: String(item.id), label: `${item.issue_type} · ${item.severity}` }))}
+            action={moderateIssueAction}
+          />
+          <ModerationList
+            title={`Pending claims (${adminData.pendingClaims.length})`}
+            rows={adminData.pendingClaims.map((item) => ({ id: String(item.id), label: `${item.name} · ${item.role}` }))}
+            action={moderateClaimAction}
+          />
+        </div>
+      </section>
+
       <section className="mt-8 panel">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <h2 className="text-xl font-semibold text-ink">Exports and discovery</h2>
@@ -83,7 +107,6 @@ export default async function AdminPage() {
         <AdminList title="Top contributing users" rows={adminData.topUsers.map((item) => `${item.actor_type} · ${item.contribution_count} contributions · ${item.verified_count} verified`)} />
         <AdminList title="Recent reviews" rows={adminData.recentReviews.map((item) => `${item.overall_rating}/5 · ${item.moderation_status} · ${new Date(String(item.created_at ?? "")).toLocaleDateString("en-GB")}`)} />
         <AdminList title="Recent issues" rows={adminData.recentIssues.map((item) => `${item.issue_type} · ${item.severity} · ${item.moderation_status}`)} />
-        <AdminList title="Pending claims" rows={adminData.pendingClaims.map((item) => `${item.name} · ${item.role} · ${item.portfolio_size}`)} />
         <AdminList title="Recent feedback" rows={adminData.recentFeedback.map((item) => `${item.source} · ${String(item.answer ?? "").slice(0, 80)}`)} />
       </div>
     </PageShell>
@@ -96,6 +119,45 @@ function AdminList({ title, rows }: { title: string; rows: string[] }) {
       <h2 className="font-semibold text-ink">{title}</h2>
       <div className="mt-4 grid gap-2">
         {rows.length ? rows.map((row, index) => <div key={`${row}-${index}`} className="rounded bg-mist px-3 py-2 text-sm text-ink">{row}</div>) : <p className="text-sm text-moss">No records yet.</p>}
+      </div>
+    </section>
+  );
+}
+
+function ModerationList({
+  title,
+  rows,
+  action
+}: {
+  title: string;
+  rows: { id: string; label: string }[];
+  action: (formData: FormData) => void | Promise<void>;
+}) {
+  return (
+    <section className="panel">
+      <h2 className="font-semibold text-ink">{title}</h2>
+      <div className="mt-4 grid gap-2">
+        {rows.length ? (
+          rows.map((row) => (
+            <div key={row.id} className="flex items-center justify-between gap-3 rounded bg-mist px-3 py-2 text-sm text-ink">
+              <span className="truncate">{row.label}</span>
+              <div className="flex shrink-0 gap-2">
+                <form action={action}>
+                  <input type="hidden" name="id" value={row.id} />
+                  <input type="hidden" name="status" value="approved" />
+                  <button type="submit" className="button-secondary px-2 py-1 text-xs">Approve</button>
+                </form>
+                <form action={action}>
+                  <input type="hidden" name="id" value={row.id} />
+                  <input type="hidden" name="status" value="rejected" />
+                  <button type="submit" className="button-secondary px-2 py-1 text-xs">Reject</button>
+                </form>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm text-moss">Nothing pending.</p>
+        )}
       </div>
     </section>
   );

@@ -104,6 +104,11 @@ export const referralSchema = z.object({
   recipient_email: z.string().trim().email().optional().or(z.literal("")).nullable()
 });
 
+export const magicLinkSchema = z.object({
+  email: z.string().trim().email("Use a valid email"),
+  next: optionalText
+});
+
 export function formObject(formData: FormData) {
   const data: Record<string, FormDataEntryValue | boolean> = {};
   for (const [key, value] of formData.entries()) data[key] = value;

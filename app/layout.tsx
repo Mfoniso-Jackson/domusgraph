@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
+import { getCurrentUser } from "@/lib/data";
+import { signOutAction } from "@/lib/actions";
 
 export const metadata: Metadata = {
   title: "DomusGraph",
   description: "Housing transparency for renters, landlords, and property managers."
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en">
       <body>
@@ -21,6 +25,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/onboarding" className="hover:text-clay">Onboarding</Link>
               <Link href="/property-manager" className="hover:text-clay">Managers</Link>
               <Link href="/dashboard" className="hover:text-clay">Dashboard</Link>
+              {user ? (
+                <form action={signOutAction} className="flex items-center gap-3">
+                  <span className="text-ink">{user.email}</span>
+                  <button type="submit" className="hover:text-clay">Sign out</button>
+                </form>
+              ) : (
+                <Link href="/auth/sign-in" className="hover:text-clay">Sign in</Link>
+              )}
             </div>
           </nav>
         </header>

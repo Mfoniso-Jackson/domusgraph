@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   if (!user) {
     return (
       <PageShell>
-        <EmptyState title="Sign in to see your dashboard" body="Supabase Auth is wired for authenticated dashboards. Add your auth UI/provider settings to enable user sessions." href="/search" action="Contribute property data" />
+        <EmptyState title="Sign in to see your dashboard" body="Sign in with a magic link to track your reviews, issues, claims, and contributor reputation." href="/auth/sign-in?next=/dashboard" action="Sign in" />
       </PageShell>
     );
   }

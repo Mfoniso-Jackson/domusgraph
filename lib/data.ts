@@ -102,7 +102,7 @@ export async function getAdminData() {
   const user = await getCurrentUser();
   if (!user || !isAdminEmail(user.email)) return { allowed: false };
   const supabase = createSupabaseAdminClient();
-  const [properties, reviews, issues, claims, intakes, housingEvents, verifiedEvents, feedback, dailyEvents, topUsers, topCities] = await Promise.all([
+  const [properties, reviews, issues, claims, intakes, housingEvents, verifiedEvents, feedback, dailyEvents, topUsers, topCities, pendingReviews, pendingIssues, pendingClaims] = await Promise.all([
     supabase.from("properties").select("id", { count: "exact", head: true }),
     supabase.from("reviews").select("*", { count: "exact" }).order("created_at", { ascending: false }).limit(8),
     supabase.from("maintenance_issues").select("*", { count: "exact" }).order("created_at", { ascending: false }).limit(8),
@@ -113,7 +113,10 @@ export async function getAdminData() {
     supabase.from("feedback_responses").select("*", { count: "exact" }).order("created_at", { ascending: false }).limit(8),
     supabase.from("housing_events_daily_growth").select("*").order("event_day", { ascending: false }).limit(30),
     supabase.from("top_contributing_users").select("*").limit(10),
-    supabase.from("top_growing_cities").select("*").limit(10)
+    supabase.from("top_growing_cities").select("*").limit(10),
+    supabase.from("reviews").select("*").eq("moderation_status", "pending").order("created_at", { ascending: true }).limit(20),
+    supabase.from("maintenance_issues").select("*").eq("moderation_status", "pending").order("created_at", { ascending: true }).limit(20),
+    supabase.from("property_claims").select("*").eq("claim_status", "pending").order("created_at", { ascending: true }).limit(20)
   ]);
   const propertyCount = properties.count ?? 0;
   const reviewCount = reviews.count ?? 0;
@@ -135,7 +138,9 @@ export async function getAdminData() {
     },
     recentReviews: reviews.data ?? [],
     recentIssues: issues.data ?? [],
-    pendingClaims: (claims.data ?? []).filter((claim) => claim.claim_status === "pending"),
+    pendingReviews: pendingReviews.data ?? [],
+    pendingIssues: pendingIssues.data ?? [],
+    pendingClaims: pendingClaims.data ?? [],
     recentHousingEvents: housingEvents.data ?? [],
     recentFeedback: feedback.data ?? [],
     dailyGrowth: dailyEvents.data ?? [],
