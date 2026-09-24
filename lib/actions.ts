@@ -7,6 +7,7 @@ import { claimSchema, feedbackSchema, formObject, issueSchema, managerIntakeSche
 import { getCurrentUser } from "@/lib/data";
 import { logAnalyticsEvent, logHousingEvent } from "@/lib/events";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { notifyAdminsOfPendingItem, notifyContributorOfModeration } from "@/lib/notifications";
 
 async function requireSupabase(rateLimitAction?: string) {
   if (!isConfigured()) {
@@ -65,6 +66,7 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
     eventType: "review_submitted",
     metadata: { overall_rating: parsed.overall_rating, would_rent_again: parsed.would_rent_again }
   });
+  await notifyAdminsOfPendingItem({ type: "review", propertyId });
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=review`);
 }
@@ -87,6 +89,7 @@ export async function submitIssueAction(propertyId: string, formData: FormData) 
     eventType: parsed.status === "Resolved" ? "maintenance_issue_resolved" : "maintenance_issue_reported",
     metadata: { issue_type: parsed.issue_type, severity: parsed.severity, status: parsed.status, response_time: parsed.response_time }
   });
+  await notifyAdminsOfPendingItem({ type: "issue", propertyId });
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=issue`);
 }
@@ -109,6 +112,7 @@ export async function submitClaimAction(propertyId: string, formData: FormData) 
     eventType: "property_claimed",
     metadata: { role: parsed.role, portfolio_size: parsed.portfolio_size, maintenance_workflow: parsed.maintenance_workflow }
   });
+  await notifyAdminsOfPendingItem({ type: "claim", propertyId });
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=claim`);
 }
@@ -202,8 +206,9 @@ export async function moderateReviewAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const { data, error } = await supabase.from("reviews").update({ moderation_status: status }).eq("id", id).select("property_id").single();
+  const { data, error } = await supabase.from("reviews").update({ moderation_status: status }).eq("id", id).select("property_id, user_id").single();
   if (error) throw error;
+  await notifyContributorOfModeration({ type: "review", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
 }
@@ -212,8 +217,9 @@ export async function moderateIssueAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const { data, error } = await supabase.from("maintenance_issues").update({ moderation_status: status }).eq("id", id).select("property_id").single();
+  const { data, error } = await supabase.from("maintenance_issues").update({ moderation_status: status }).eq("id", id).select("property_id, user_id").single();
   if (error) throw error;
+  await notifyContributorOfModeration({ type: "issue", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
 }
@@ -222,8 +228,9 @@ export async function moderateClaimAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const { data, error } = await supabase.from("property_claims").update({ claim_status: status }).eq("id", id).select("property_id").single();
+  const { data, error } = await supabase.from("property_claims").update({ claim_status: status }).eq("id", id).select("property_id, user_id, email").single();
   if (error) throw error;
+  await notifyContributorOfModeration({ type: "claim", status, userId: data?.user_id, email: data?.email, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
 }

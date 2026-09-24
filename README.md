@@ -33,7 +33,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_EMAILS=founder@example.com,ops@example.com
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+RESEND_API_KEY=
+EMAIL_FROM=DomusGraph <onboarding@resend.dev>
 ```
+
+`RESEND_API_KEY` is optional — without it, email sends are silently skipped (same graceful-fallback pattern as Supabase). Without a verified sending domain on Resend, sandbox mode can only deliver to the Resend account's own email address.
 
 Run the SQL migrations in order:
 
@@ -146,12 +150,9 @@ The MVP prioritizes structured data needed for future housing graph intelligence
 
 ## Next Iteration
 
-- Add Supabase Auth UI and magic-link sign-in pages
-- Add approve/reject moderation controls in `/admin`
 - Add address normalization and postcode lookup
 - Add evidence uploads and verification levels
-- Add rate limiting and abuse prevention to server actions
 - Add EPC enrichment and UPRN-backed property identity
 - Add HMO/selective licensing and council enforcement data once address identity is solid
-- Convert notification abstraction into real email delivery
 - Add moderation actions that mark housing events as verified
+- Add production error monitoring

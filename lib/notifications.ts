@@ -1,6 +1,11 @@
-import { createSupabaseAdminClient, isConfigured } from "@/lib/supabase";
+import { createSupabaseAdminClient, getAdminEmails, isConfigured } from "@/lib/supabase";
+import { sendEmail } from "@/lib/email";
 
 export type NotificationChannel = "in_app" | "email" | "push";
+
+function siteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+}
 
 export async function createNotification(input: {
   userId?: string | null;
@@ -20,28 +25,58 @@ export async function createNotification(input: {
   });
 }
 
-export const notificationService = {
-  reviewApproved(userId: string) {
-    return createNotification({
-      userId,
-      title: "Your review was approved",
-      body: "Your housing experience now helps future renters make a better decision."
-    });
-  },
-  propertyUpdated(userId: string, propertyId: string) {
-    return createNotification({
-      userId,
-      title: "Property updated",
-      body: "A property you contributed to has new housing graph activity.",
-      metadata: { property_id: propertyId }
-    });
-  },
-  claimApproved(userId: string, propertyId: string) {
-    return createNotification({
-      userId,
-      title: "Claim approved",
-      body: "Your property claim is now verified.",
-      metadata: { property_id: propertyId }
+async function getUserEmail(userId: string) {
+  if (!isConfigured()) return null;
+  const supabase = createSupabaseAdminClient();
+  const { data } = await supabase.auth.admin.getUserById(userId);
+  return data.user?.email ?? null;
+}
+
+export type PendingItemType = "review" | "issue" | "claim";
+
+const pendingItemLabels: Record<PendingItemType, string> = {
+  review: "review",
+  issue: "maintenance issue",
+  claim: "property claim"
+};
+
+export async function notifyAdminsOfPendingItem(input: { type: PendingItemType; propertyId: string | null }) {
+  const admins = getAdminEmails();
+  if (!admins.length) return;
+  const label = pendingItemLabels[input.type];
+  const link = `${siteUrl()}/admin`;
+  await sendEmail({
+    to: admins,
+    subject: `New ${label} pending moderation`,
+    html: `<p>A new ${label} was submitted${input.propertyId ? " for a property" : ""} and needs review.</p><p><a href="${link}">Open the moderation queue</a></p>`
+  });
+}
+
+export async function notifyContributorOfModeration(input: {
+  type: PendingItemType;
+  status: string;
+  userId?: string | null;
+  email?: string | null;
+  propertyId: string | null;
+}) {
+  const email = input.email ?? (input.userId ? await getUserEmail(input.userId) : null);
+  if (!email) return;
+  const label = pendingItemLabels[input.type];
+  const decision = input.status === "approved" ? "approved" : "not approved";
+  const link = input.propertyId ? `${siteUrl()}/property/${input.propertyId}` : siteUrl();
+  await sendEmail({
+    to: email,
+    subject: `Your ${label} was ${decision}`,
+    html: `<p>Your ${label} on DomusGraph was ${decision}${input.status === "approved" ? " and is now visible to renters" : ""}.</p><p><a href="${link}">View the property</a></p>`
+  });
+
+  if (input.userId) {
+    await createNotification({
+      userId: input.userId,
+      channel: "email",
+      title: `Your ${label} was ${decision}`,
+      body: input.status === "approved" ? "Your housing experience now helps future renters make a better decision." : "This submission was not approved for public display.",
+      metadata: { property_id: input.propertyId, type: input.type, status: input.status }
     });
   }
-};
+}
