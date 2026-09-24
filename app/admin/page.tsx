@@ -124,11 +124,14 @@ function AdminList({ title, rows }: { title: string; rows: string[] }) {
     <section className="panel">
       <h2 className="font-semibold text-ink">{title}</h2>
       <div className="mt-4 grid gap-2">
-        {rows.length ? rows.map((row, index) => <div key={`${row}-${index}`} className="rounded bg-mist px-3 py-2 text-sm text-ink">{row}</div>) : <p className="text-sm text-slate">No records yet.</p>}
+        {rows.length ? rows.map((row, index) => <div key={`${row}-${index}`} className="rounded-md bg-mist px-3 py-2 text-sm text-ink">{row}</div>) : <p className="text-sm text-slate">No records yet.</p>}
       </div>
     </section>
   );
 }
+
+const compactButtonBase =
+  "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2.5 text-xs font-semibold transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-mist active:scale-95";
 
 function ModerationList({
   title,
@@ -145,11 +148,11 @@ function ModerationList({
       <div className="mt-4 grid gap-2">
         {rows.length ? (
           rows.map((row) => (
-            <div key={row.id} className="flex items-center justify-between gap-3 rounded bg-mist px-3 py-2 text-sm text-ink">
+            <div key={row.id} className="flex items-center justify-between gap-3 rounded-md bg-mist px-3 py-2 text-sm text-ink">
               <span className="flex min-w-0 items-center gap-2 truncate">
                 {row.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={row.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
+                  <img src={row.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-md object-cover" />
                 ) : null}
                 <span className="truncate">{row.label}</span>
               </span>
@@ -157,12 +160,16 @@ function ModerationList({
                 <form action={action}>
                   <input type="hidden" name="id" value={row.id} />
                   <input type="hidden" name="status" value="approved" />
-                  <button type="submit" className="button-secondary px-2 py-1 text-xs">Approve</button>
+                  <button type="submit" className={`${compactButtonBase} border border-leaf/30 bg-white text-leaf hover:bg-leaf/10`}>
+                    Approve
+                  </button>
                 </form>
                 <form action={action}>
                   <input type="hidden" name="id" value={row.id} />
                   <input type="hidden" name="status" value="rejected" />
-                  <button type="submit" className="button-secondary px-2 py-1 text-xs">Reject</button>
+                  <button type="submit" className={`${compactButtonBase} border border-slate/25 bg-white text-slate hover:border-signal/40 hover:text-signal`}>
+                    Reject
+                  </button>
                 </form>
               </div>
             </div>

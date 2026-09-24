@@ -6,7 +6,12 @@ export default async function AdminFeedbackPage() {
   if (!data.allowed) {
     return (
       <PageShell>
-        <EmptyState title="Admin access required" body="Feedback browsing is protected by the ADMIN_EMAILS allowlist and Supabase Auth." />
+        <EmptyState
+          title="Admin access required"
+          body="Feedback browsing is protected by the ADMIN_EMAILS allowlist and Supabase Auth."
+          href="/auth/sign-in?next=/admin/feedback"
+          action="Sign in"
+        />
       </PageShell>
     );
   }

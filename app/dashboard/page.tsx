@@ -51,7 +51,19 @@ function Activity({ title, rows }: { title: string; rows: { id: string; label: s
     <section className="panel">
       <h2 className="font-semibold text-ink">{title}</h2>
       <div className="mt-4 grid gap-2">
-        {rows.length ? rows.map((row) => <Link key={row.id} href={row.href} className="rounded bg-mist px-3 py-2 text-sm text-ink hover:text-signal">{row.label}</Link>) : <p className="text-sm text-slate">No activity yet.</p>}
+        {rows.length ? (
+          rows.map((row) => (
+            <Link
+              key={row.id}
+              href={row.href}
+              className="rounded-md bg-mist px-3 py-2 text-sm text-ink transition-colors duration-150 ease-out hover:bg-signal/10 hover:text-signal"
+            >
+              {row.label}
+            </Link>
+          ))
+        ) : (
+          <p className="text-sm text-slate">No activity yet.</p>
+        )}
       </div>
     </section>
   );
