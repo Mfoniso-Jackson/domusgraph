@@ -1,10 +1,24 @@
-import { PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
+import { EmptyState, PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
 import { submitClaimAction } from "@/lib/actions";
-import { getProperty } from "@/lib/data";
+import { getCurrentUser, getProperty } from "@/lib/data";
 import { logAnalyticsEvent } from "@/lib/events";
 
 export default async function ClaimPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const user = await getCurrentUser();
+  if (!user) {
+    return (
+      <PageShell>
+        <SectionHeader eyebrow="Landlord claim" title="Claim this property profile" />
+        <EmptyState
+          title="Sign in to claim this property"
+          body="Ownership claims are tied to your account so we can verify and follow up. It only takes a magic link, no password."
+          href={`/auth/sign-in?next=${encodeURIComponent(`/property/${id}/claim`)}`}
+          action="Sign in"
+        />
+      </PageShell>
+    );
+  }
   await logAnalyticsEvent("claim_started", { property_id: id });
   const property = await getProperty(id);
   const action = submitClaimAction.bind(null, id);

@@ -25,6 +25,14 @@ async function requireAdmin() {
   return createSupabaseAdminClient();
 }
 
+async function requireUser() {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Sign in required to submit this.");
+  }
+  return user;
+}
+
 export async function createPropertyAction(formData: FormData) {
   const parsed = propertySchema.parse(formObject(formData));
   const supabase = await requireSupabase("create_property");
@@ -50,12 +58,12 @@ export async function logSearchAction(formData: FormData) {
 
 export async function submitReviewAction(propertyId: string, formData: FormData) {
   const parsed = reviewSchema.parse(formObject(formData));
+  const user = await requireUser();
   const supabase = await requireSupabase("submit_review");
-  const user = await getCurrentUser();
   const { error } = await supabase.from("reviews").insert({
     ...parsed,
     property_id: propertyId,
-    user_id: user?.id ?? null,
+    user_id: user.id,
     moderation_status: "pending"
   });
   if (error) throw error;
@@ -73,12 +81,12 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
 
 export async function submitIssueAction(propertyId: string, formData: FormData) {
   const parsed = issueSchema.parse(formObject(formData));
+  const user = await requireUser();
   const supabase = await requireSupabase("submit_issue");
-  const user = await getCurrentUser();
   const { error } = await supabase.from("maintenance_issues").insert({
     ...parsed,
     property_id: propertyId,
-    user_id: user?.id ?? null,
+    user_id: user.id,
     moderation_status: "pending"
   });
   if (error) throw error;
@@ -96,12 +104,12 @@ export async function submitIssueAction(propertyId: string, formData: FormData) 
 
 export async function submitClaimAction(propertyId: string, formData: FormData) {
   const parsed = claimSchema.parse(formObject(formData));
+  const user = await requireUser();
   const supabase = await requireSupabase("submit_claim");
-  const user = await getCurrentUser();
   const { error } = await supabase.from("property_claims").insert({
     ...parsed,
     property_id: propertyId,
-    user_id: user?.id ?? null,
+    user_id: user.id,
     claim_status: "pending"
   });
   if (error) throw error;

@@ -39,7 +39,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main>{children}</main>
         <footer className="border-t border-moss/15 bg-white">
           <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-moss">
-            DomusGraph is an early housing transparency platform. Reviews and reports may be user-submitted and should be considered alongside independent checks.
+            <p>
+              DomusGraph is an early housing transparency platform. Reviews and reports may be user-submitted and should be considered alongside independent checks.
+            </p>
+            <div className="mt-3 flex gap-4">
+              <Link href="/terms" className="hover:text-clay">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-clay">Privacy Policy</Link>
+            </div>
           </div>
         </footer>
       </body>

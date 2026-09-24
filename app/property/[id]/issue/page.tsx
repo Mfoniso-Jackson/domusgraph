@@ -1,10 +1,24 @@
-import { PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
+import { EmptyState, PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
 import { submitIssueAction } from "@/lib/actions";
-import { getProperty } from "@/lib/data";
+import { getCurrentUser, getProperty } from "@/lib/data";
 import { logAnalyticsEvent } from "@/lib/events";
 
 export default async function IssuePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const user = await getCurrentUser();
+  if (!user) {
+    return (
+      <PageShell>
+        <SectionHeader eyebrow="Maintenance event" title="Report a maintenance issue" />
+        <EmptyState
+          title="Sign in to report an issue"
+          body="Maintenance reports are tied to your account so we can moderate content and follow up if there's a dispute. It only takes a magic link, no password."
+          href={`/auth/sign-in?next=${encodeURIComponent(`/property/${id}/issue`)}`}
+          action="Sign in"
+        />
+      </PageShell>
+    );
+  }
   await logAnalyticsEvent("issue_started", { property_id: id });
   const property = await getProperty(id);
   const action = submitIssueAction.bind(null, id);
