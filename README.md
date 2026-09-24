@@ -126,9 +126,13 @@ The Housing Graph connects:
 
 The data model deliberately normalizes issue categories, response times, property types, outcomes, actor types, and event types so future AI models can learn from structured graph data instead of only free text.
 
+## Seed Data
+
+`npm run seed:properties -- [council] [count] [--dry-run]` populates real property profiles (address, postcode, city — no reviews) from the government EPC register, so search isn't empty before real users arrive. Defaults to 200 Cambridge addresses. Safe to re-run: skips addresses already in the database. This only ever creates address records, never reviews, issues, or claims — those must come from real people, since fabricating them would violate the platform's own Terms of Service.
+
 ## Data and Moderation
 
-Reviews and maintenance issues default to `pending`. The public RLS policies only expose `approved` reviews/issues and a signed-in user's own records. The app uses a server-side service role client for MVP submissions and admin displays so data collection works with minimal renter friction. Before a public launch with open traffic, add rate limiting, spam checks, and explicit moderation controls.
+Reviews, maintenance issues, claims, and photos default to `pending` and go through the `/admin` moderation queue (approve/reject), which also sets `verification_level` and marks the linked housing event verified. The public RLS policies only expose `approved` reviews/issues and a signed-in user's own records. The app uses a server-side service role client for MVP submissions and admin displays so data collection works with minimal renter friction. Public write actions require sign-in (magic link) and are rate-limited per IP.
 
 The admin dashboard is protected by Supabase Auth plus the `ADMIN_EMAILS` allowlist. It shows recent pending records and exports CSV files for:
 

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed:properties": "node --env-file=.env.local scripts/seed-properties-from-epc.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
