@@ -51,7 +51,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           <legend className="label mb-3">Did you experience any of these?</legend>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {issueFlags.map(([name, label]) => (
-              <label key={name} className="flex items-center gap-2 rounded border border-moss/15 bg-mist px-3 py-2 text-sm">
+              <label key={name} className="flex items-center gap-2 rounded border border-slate/15 bg-mist px-3 py-2 text-sm">
                 <input type="checkbox" name={name} />
                 {label}
               </label>

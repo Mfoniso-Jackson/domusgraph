@@ -16,7 +16,7 @@ export default async function NeighbourhoodPage({ params }: { params: Promise<{ 
     <PageShell>
       <SectionHeader eyebrow="Neighbourhood housing graph" title={`${label} rental transparency`} body="Neighbourhood pages aggregate user-submitted housing events and public information as the graph grows." />
       <div className="panel">
-        <p className="text-moss">This neighbourhood page is ready for property, review, maintenance, licensing, and public-data aggregation once enough local profiles exist.</p>
+        <p className="text-slate">This neighbourhood page is ready for property, review, maintenance, licensing, and public-data aggregation once enough local profiles exist.</p>
         <Link href="/search" className="button-primary mt-5">Add a local property</Link>
       </div>
     </PageShell>

@@ -124,7 +124,7 @@ function AdminList({ title, rows }: { title: string; rows: string[] }) {
     <section className="panel">
       <h2 className="font-semibold text-ink">{title}</h2>
       <div className="mt-4 grid gap-2">
-        {rows.length ? rows.map((row, index) => <div key={`${row}-${index}`} className="rounded bg-mist px-3 py-2 text-sm text-ink">{row}</div>) : <p className="text-sm text-moss">No records yet.</p>}
+        {rows.length ? rows.map((row, index) => <div key={`${row}-${index}`} className="rounded bg-mist px-3 py-2 text-sm text-ink">{row}</div>) : <p className="text-sm text-slate">No records yet.</p>}
       </div>
     </section>
   );
@@ -168,7 +168,7 @@ function ModerationList({
             </div>
           ))
         ) : (
-          <p className="text-sm text-moss">Nothing pending.</p>
+          <p className="text-sm text-slate">Nothing pending.</p>
         )}
       </div>
     </section>

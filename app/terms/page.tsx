@@ -52,7 +52,7 @@ export default function TermsPage() {
           <p>
             If you are a landlord, letting agent, or property manager and believe content about a property you
             manage is false, defamatory, or violates these terms, contact us at{" "}
-            <a className="text-clay underline" href="mailto:legal@domusgraph.com">legal@domusgraph.com</a> with the
+            <a className="text-signal underline" href="mailto:legal@domusgraph.com">legal@domusgraph.com</a> with the
             property address and the specific content in question. We will review disputed content and may remove
             or restrict it pending investigation.
           </p>
@@ -97,7 +97,7 @@ export default function TermsPage() {
         <Section title="10. Contact">
           <p>
             Questions about these terms:{" "}
-            <a className="text-clay underline" href="mailto:legal@domusgraph.com">legal@domusgraph.com</a>
+            <a className="text-signal underline" href="mailto:legal@domusgraph.com">legal@domusgraph.com</a>
           </p>
         </Section>
       </div>

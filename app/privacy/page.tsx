@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           <p>
             DomusGraph (&quot;we&quot;, &quot;us&quot;) is the data controller for personal data processed through
             domusgraph.com. Contact:{" "}
-            <a className="text-clay underline" href="mailto:privacy@domusgraph.com">privacy@domusgraph.com</a>
+            <a className="text-signal underline" href="mailto:privacy@domusgraph.com">privacy@domusgraph.com</a>
           </p>
         </Section>
 
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise any of these, email{" "}
-            <a className="text-clay underline" href="mailto:privacy@domusgraph.com">privacy@domusgraph.com</a>.
+            <a className="text-signal underline" href="mailto:privacy@domusgraph.com">privacy@domusgraph.com</a>.
           </p>
         </Section>
 

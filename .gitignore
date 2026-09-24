@@ -11,3 +11,5 @@ tsconfig.tsbuildinfo
 supabase/.temp
 .vercel
 .env*
+.brand-preview
+*.bak

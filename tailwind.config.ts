@@ -5,15 +5,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#17201b",
-        moss: "#385244",
-        leaf: "#5c8068",
-        clay: "#b25f45",
-        paper: "#f7f4ee",
-        mist: "#e8eee9"
+        // "Verified Slate" brand palette — see brand.md (hex, not oklch(): Tailwind
+        // v3's @apply can't resolve opacity modifiers like border-slate/20 on raw
+        // oklch() config values)
+        ink: "#091015",
+        slate: "#465865",
+        leaf: "#31573f",
+        signal: "#18364a",
+        paper: "#f6f9fb",
+        mist: "#edf1f4"
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"]
       },
       boxShadow: {
-        soft: "0 12px 36px rgba(23, 32, 27, 0.08)"
+        soft: "0 12px 36px rgba(9, 16, 21, 0.08)"
       }
     }
   },

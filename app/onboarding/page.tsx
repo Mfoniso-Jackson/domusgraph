@@ -11,7 +11,7 @@ export default function OnboardingPage() {
       />
       <form action={submitOnboardingAction} className="panel grid gap-6">
         <SelectField label="Who are you?" name="user_type" options={["Renter", "Landlord", "Letting Agent", "Property Manager"]} />
-        <section className="rounded border border-moss/15 bg-mist p-4">
+        <section className="rounded border border-slate/15 bg-mist p-4">
           <h2 className="font-semibold text-ink">Renter</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <SelectField label="Biggest rental frustration" name="biggest_rental_frustration" required={false} options={["Maintenance delays", "Poor communication", "Deposit disputes", "Hidden issues", "Rent increases", "Safety concerns"]} />
@@ -19,7 +19,7 @@ export default function OnboardingPage() {
             <SelectField label="Would you recommend your previous property?" name="would_recommend_previous_property" required={false} options={["Yes", "No", "Not sure"]} />
           </div>
         </section>
-        <section className="rounded border border-moss/15 bg-mist p-4">
+        <section className="rounded border border-slate/15 bg-mist p-4">
           <h2 className="font-semibold text-ink">Landlord or Letting Agent</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <SelectField label="Number of properties" name="number_of_properties" required={false} options={["1 property", "2-5", "6-20", "20+"]} />
@@ -27,7 +27,7 @@ export default function OnboardingPage() {
             <SelectField label="Current maintenance workflow" name="landlord_maintenance_workflow" required={false} options={["Email", "WhatsApp", "Phone calls", "Property software", "Other"]} />
           </div>
         </section>
-        <section className="rounded border border-moss/15 bg-mist p-4">
+        <section className="rounded border border-slate/15 bg-mist p-4">
           <h2 className="font-semibold text-ink">Property Manager</h2>
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <SelectField label="Units managed" name="units_managed" required={false} options={["Under 50", "50-250", "250-1,000", "1,000+"]} />

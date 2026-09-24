@@ -39,9 +39,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     <PageShell>
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
         <div>
-          <p className="mb-2 text-sm font-semibold uppercase text-clay">Property profile</p>
+          <p className="mb-2 text-sm font-semibold uppercase text-signal">Property profile</p>
           <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{property.address_line_1}</h1>
-          <p className="mt-2 text-moss">{[property.address_line_2, property.city, property.postcode].filter(Boolean).join(", ")}</p>
+          <p className="mt-2 text-slate">{[property.address_line_2, property.city, property.postcode].filter(Boolean).join(", ")}</p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <TrustBadges
               verifiedReviews={reviews.filter((review) => review.verification_level === "verified").length}
@@ -54,9 +54,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 href={epcCertificateUrl(epcMatch.certificateNumber)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded bg-mist px-3 py-1 text-xs font-semibold text-ink hover:text-clay"
+                className="inline-flex items-center gap-1 rounded bg-mist px-3 py-1 text-xs font-semibold text-ink hover:text-signal"
               >
-                <Zap className="h-3.5 w-3.5 text-clay" />
+                <Zap className="h-3.5 w-3.5 text-signal" />
                 Energy rating {epcMatch.currentEnergyEfficiencyBand}
               </a>
             ) : null}
@@ -109,7 +109,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               ))}
             </div>
           ) : (
-            <p className="mt-3 text-sm text-moss">No maintenance issues have been reported yet.</p>
+            <p className="mt-3 text-sm text-slate">No maintenance issues have been reported yet.</p>
           )}
         </div>
 
@@ -120,13 +120,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               {timeline.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <article key={`${item.type}-${index}`} className="border-l-2 border-moss/20 pl-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-clay">
+                  <article key={`${item.type}-${index}`} className="border-l-2 border-slate/20 pl-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-signal">
                       <Icon className="h-4 w-4" />
                       {item.type} · {new Date(item.date).toLocaleDateString("en-GB")}
                     </div>
                     <h3 className="mt-1 font-semibold text-ink">{item.title}</h3>
-                    <p className="mt-1 line-clamp-3 text-sm leading-6 text-moss">{item.body}</p>
+                    <p className="mt-1 line-clamp-3 text-sm leading-6 text-slate">{item.body}</p>
                   </article>
                 );
               })}
@@ -137,12 +137,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
       </section>
 
-      <section className="mt-8 rounded border border-moss/15 bg-white p-5">
-        <div className="flex items-center gap-2 text-sm font-semibold text-moss">
-          <Star className="h-4 w-4 text-clay" />
+      <section className="mt-8 rounded border border-slate/15 bg-white p-5">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate">
+          <Star className="h-4 w-4 text-signal" />
           Useful with little data
         </div>
-        <p className="mt-2 text-sm leading-6 text-moss">
+        <p className="mt-2 text-sm leading-6 text-slate">
           DomusGraph separates structured ratings, maintenance events, response time, and claim signals so sparse early data can still help renters ask better questions before signing.
         </p>
       </section>

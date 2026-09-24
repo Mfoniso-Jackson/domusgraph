@@ -10,19 +10,19 @@ export function CompletionScore({ property }: { property: CompletionInput }) {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-ink">Housing Profile Completeness</h2>
-          <p className="mt-1 text-sm text-moss">Complete profiles create stronger housing graph signals.</p>
+          <p className="mt-1 text-sm text-slate">Complete profiles create stronger housing graph signals.</p>
         </div>
-        <div className="text-3xl font-bold text-clay">{completion.score}%</div>
+        <div className="text-3xl font-bold text-signal">{completion.score}%</div>
       </div>
       <div className="mt-4 h-2 rounded bg-mist">
-        <div className="h-2 rounded bg-clay" style={{ width: `${completion.score}%` }} />
+        <div className="h-2 rounded bg-signal" style={{ width: `${completion.score}%` }} />
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {completionParts.map((part) => {
           const done = completion.checks[part.key];
           return (
             <div key={part.key} className="flex items-center gap-2 text-sm text-ink">
-              {done ? <CheckCircle2 className="h-4 w-4 text-leaf" /> : <Circle className="h-4 w-4 text-moss" />}
+              {done ? <CheckCircle2 className="h-4 w-4 text-leaf" /> : <Circle className="h-4 w-4 text-slate" />}
               <span>{part.label}</span>
             </div>
           );
@@ -39,7 +39,7 @@ export function TrustBadges({ verifiedReviews = 0, verifiedIssues = 0, claims = 
     <div className="flex flex-wrap gap-2">
       {badges.map((badge) => (
         <span key={badge} className="inline-flex items-center gap-1 rounded bg-mist px-3 py-1 text-xs font-semibold text-ink">
-          <ShieldCheck className="h-3.5 w-3.5 text-clay" />
+          <ShieldCheck className="h-3.5 w-3.5 text-signal" />
           {badge}
         </span>
       ))}
@@ -68,7 +68,7 @@ export function ContributorReputation({
   return (
     <section className="panel">
       <div className="flex items-center gap-2">
-        <TrendingUp className="h-5 w-5 text-clay" />
+        <TrendingUp className="h-5 w-5 text-signal" />
         <h2 className="text-xl font-semibold text-ink">Housing Reputation</h2>
       </div>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -77,16 +77,16 @@ export function ContributorReputation({
         <Metric label="Verified Issues" value={verifiedIssues} />
         <Metric label="Reputation Points" value={reputation} />
       </div>
-      <p className="mt-4 text-sm text-moss">Reputation rewards useful, trustworthy housing contributions. No financial incentives, no noisy gamification.</p>
+      <p className="mt-4 text-sm text-slate">Reputation rewards useful, trustworthy housing contributions. No financial incentives, no noisy gamification.</p>
     </section>
   );
 }
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded border border-moss/15 bg-mist p-3">
+    <div className="rounded border border-slate/15 bg-mist p-3">
       <div className="text-xl font-bold text-ink">{value}</div>
-      <div className="text-sm text-moss">{label}</div>
+      <div className="text-sm text-slate">{label}</div>
     </div>
   );
 }
@@ -95,7 +95,7 @@ export function ContributionPrompt({ propertyId, source = "post_action" }: { pro
   return (
     <section className="panel">
       <h2 className="text-2xl font-bold text-ink">Help future renters.</h2>
-      <p className="mt-2 text-sm text-moss">One more signal can make this property profile dramatically more useful.</p>
+      <p className="mt-2 text-sm text-slate">One more signal can make this property profile dramatically more useful.</p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/review`}>Leave another review</Link> : <Link className="button-secondary" href="/search">Leave a review</Link>}
         {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/issue`}>Report another issue</Link> : <Link className="button-secondary" href="/search">Report an issue</Link>}

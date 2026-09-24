@@ -17,7 +17,7 @@ export default async function AdminFeedbackPage() {
       <div className="grid gap-4">
         {data.responses.length ? data.responses.map((response) => (
           <article key={response.id} className="panel">
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-moss">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate">
               <span>{response.source}</span>
               <span>{new Date(response.created_at).toLocaleDateString("en-GB")}</span>
             </div>

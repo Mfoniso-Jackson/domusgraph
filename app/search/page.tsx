@@ -32,7 +32,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <section className="panel">
             <h2 className="font-semibold text-ink">Popular properties</h2>
             <div className="mt-3 grid gap-2">
-              {discovery.popularProperties.slice(0, 3).map((property) => <a key={property.id} className="text-sm font-medium text-ink hover:text-clay" href={`/property/${property.id}`}>{property.address_line_1}, {property.postcode}</a>)}
+              {discovery.popularProperties.slice(0, 3).map((property) => <a key={property.id} className="text-sm font-medium text-ink hover:text-signal" href={`/property/${property.id}`}>{property.address_line_1}, {property.postcode}</a>)}
             </div>
           </section>
         </div>
@@ -45,7 +45,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       {properties.length === 0 ? (
         <div className="panel mt-8">
           <h2 className="text-xl font-semibold text-ink">No matching property yet</h2>
-          <p className="mt-2 text-sm text-moss">Create a lightweight profile. Reviews, issues, and claims can attach to it immediately.</p>
+          <p className="mt-2 text-sm text-slate">Create a lightweight profile. Reviews, issues, and claims can attach to it immediately.</p>
           <form action={createPropertyAction} className="mt-5 grid gap-4 md:grid-cols-2">
             <TextField label="Address line 1" name="address_line_1" />
             <TextField label="Address line 2" name="address_line_2" required={false} />

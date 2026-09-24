@@ -4,13 +4,13 @@
 
 :root {
   color-scheme: light;
-  background: #f7f4ee;
+  background: #f6f9fb;
 }
 
 body {
   min-height: 100vh;
-  background: #f7f4ee;
-  color: #17201b;
+  background: #f6f9fb;
+  color: #091015;
 }
 
 input,
@@ -20,7 +20,7 @@ textarea {
 }
 
 .field {
-  @apply w-full rounded border border-moss/20 bg-white px-3 py-2 text-sm outline-none transition focus:border-clay focus:ring-2 focus:ring-clay/20;
+  @apply w-full rounded border border-slate/20 bg-white px-3 py-2 text-sm outline-none transition focus:border-signal focus:ring-2 focus:ring-signal/20;
 }
 
 .label {
@@ -28,13 +28,13 @@ textarea {
 }
 
 .button-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-moss;
+  @apply inline-flex items-center justify-center gap-2 rounded bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate;
 }
 
 .button-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded border border-moss/25 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-clay hover:text-clay;
+  @apply inline-flex items-center justify-center gap-2 rounded border border-slate/25 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-signal hover:text-signal;
 }
 
 .panel {
-  @apply rounded border border-moss/15 bg-white p-5 shadow-soft;
+  @apply rounded border border-slate/15 bg-white p-5 shadow-soft;
 }
