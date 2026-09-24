@@ -1,4 +1,5 @@
 import { EmptyState, PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { submitIssueAction } from "@/lib/actions";
 import { getCurrentUser, getProperty } from "@/lib/data";
 import { logAnalyticsEvent } from "@/lib/events";
@@ -30,7 +31,7 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
         <SelectField label="Issue type" name="issue_type" options={["Damp", "Mould", "Heating", "Plumbing", "Electrical", "Pest", "Noise", "Safety", "Other"]} />
         <SelectField label="Severity" name="severity" options={["Low", "Medium", "High", "Urgent"]} />
         <div className="md:col-span-2">
-          <TextAreaField label="Description" name="description" />
+          <TextAreaField label="Description" name="description" minLength={10} hint="At least 10 characters." />
         </div>
         <TextField label="Date discovered" name="date_discovered" type="date" required={false} />
         <SelectField label="Was landlord/property manager notified?" name="landlord_notified" options={["Yes", "No"]} />
@@ -39,7 +40,7 @@ export default async function IssuePage({ params }: { params: Promise<{ id: stri
         <TextField label="Resolution date" name="resolution_date" type="date" required={false} />
         <SelectField label="Was the issue actually fixed?" name="actually_fixed" options={["Yes", "Partially", "No", "Not applicable yet"]} />
         <div className="md:col-span-2">
-          <button className="button-primary" type="submit">Submit issue report</button>
+          <SubmitButton pendingText="Submitting report…">Submit issue report</SubmitButton>
         </div>
       </form>
     </PageShell>

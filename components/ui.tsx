@@ -41,11 +41,25 @@ export function EmptyState({ title, body, href, action }: { title: string; body:
   );
 }
 
-export function SelectField({ label, name, options, required = true }: { label: string; name: string; options: string[]; required?: boolean }) {
+function FieldLabel({ label, required }: { label: string; required: boolean }) {
+  return (
+    <span className="label">
+      {label}
+      {!required ? <span className="ml-1 font-normal text-slate">(optional)</span> : null}
+    </span>
+  );
+}
+
+type SelectFieldProps = { label: string; name: string; options: string[]; required?: boolean } & Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "name" | "required" | "className"
+>;
+
+export function SelectField({ label, name, options, required = true, ...rest }: SelectFieldProps) {
   return (
     <label className="grid gap-2">
-      <span className="label">{label}</span>
-      <select name={name} required={required} className="field">
+      <FieldLabel label={label} required={required} />
+      <select name={name} required={required} className="field" {...rest}>
         <option value="">Select</option>
         {options.map((option) => (
           <option key={option}>{option}</option>
@@ -55,20 +69,32 @@ export function SelectField({ label, name, options, required = true }: { label: 
   );
 }
 
-export function TextField({ label, name, type = "text", required = true, placeholder }: { label: string; name: string; type?: string; required?: boolean; placeholder?: string }) {
+type TextFieldProps = { label: string; name: string; type?: string; required?: boolean; placeholder?: string; hint?: string } & Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "name" | "type" | "required" | "placeholder" | "className"
+>;
+
+export function TextField({ label, name, type = "text", required = true, placeholder, hint, ...rest }: TextFieldProps) {
   return (
     <label className="grid gap-2">
-      <span className="label">{label}</span>
-      <input className="field" name={name} type={type} required={required} placeholder={placeholder} />
+      <FieldLabel label={label} required={required} />
+      <input className="field" name={name} type={type} required={required} placeholder={placeholder} {...rest} />
+      {hint ? <span className="text-xs text-slate">{hint}</span> : null}
     </label>
   );
 }
 
-export function TextAreaField({ label, name, required = true, placeholder }: { label: string; name: string; required?: boolean; placeholder?: string }) {
+type TextAreaFieldProps = { label: string; name: string; required?: boolean; placeholder?: string; hint?: string } & Omit<
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+  "name" | "required" | "placeholder" | "className"
+>;
+
+export function TextAreaField({ label, name, required = true, placeholder, hint, ...rest }: TextAreaFieldProps) {
   return (
     <label className="grid gap-2">
-      <span className="label">{label}</span>
-      <textarea className="field min-h-28" name={name} required={required} placeholder={placeholder} />
+      <FieldLabel label={label} required={required} />
+      <textarea className="field min-h-28" name={name} required={required} placeholder={placeholder} {...rest} />
+      {hint ? <span className="text-xs text-slate">{hint}</span> : null}
     </label>
   );
 }

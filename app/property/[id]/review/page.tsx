@@ -1,4 +1,5 @@
 import { EmptyState, PageShell, SectionHeader, SelectField, TextAreaField, TextField } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { submitReviewAction } from "@/lib/actions";
 import { getCurrentUser, getProperty } from "@/lib/data";
 import { logAnalyticsEvent } from "@/lib/events";
@@ -45,24 +46,29 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
         <SelectField label="Deposit fairness rating" name="deposit_fairness_rating" options={ratingOptions} />
         <SelectField label="Safety rating" name="safety_rating" options={ratingOptions} />
         <div className="md:col-span-2">
-          <TextAreaField label="What should the next tenant know?" name="review_text" />
+          <TextAreaField
+            label="What should the next tenant know?"
+            name="review_text"
+            minLength={20}
+            hint="At least 20 characters — specifics help future renters most."
+          />
         </div>
         <fieldset className="md:col-span-2">
           <legend className="label mb-3">Did you experience any of these?</legend>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {issueFlags.map(([name, label]) => (
-              <label key={name} className="flex items-center gap-2 rounded border border-slate/15 bg-mist px-3 py-2 text-sm">
-                <input type="checkbox" name={name} />
+              <label key={name} className="flex min-h-10 items-center gap-2 rounded-md border border-slate/15 bg-mist px-3 py-2.5 text-sm transition-colors duration-150 ease-out has-[:checked]:border-signal has-[:checked]:bg-signal/5">
+                <input type="checkbox" name={name} className="h-4 w-4 accent-signal" />
                 {label}
               </label>
             ))}
           </div>
         </fieldset>
         <SelectField label="Would you have rented this property if you had known these issues beforehand?" name="would_rent_again" options={["Yes", "No", "Not sure"]} />
-        <TextField label="Move-in month/year" name="move_in_month" required={false} placeholder="MM/YYYY" />
-        <TextField label="Move-out month/year" name="move_out_month" required={false} placeholder="MM/YYYY" />
+        <TextField label="Move-in month/year" name="move_in_month" required={false} placeholder="MM/YYYY" pattern="\d{2}/\d{4}" autoComplete="off" />
+        <TextField label="Move-out month/year" name="move_out_month" required={false} placeholder="MM/YYYY" pattern="\d{2}/\d{4}" autoComplete="off" />
         <div className="md:col-span-2">
-          <button className="button-primary" type="submit">Submit review</button>
+          <SubmitButton pendingText="Submitting review…">Submit review</SubmitButton>
         </div>
       </form>
     </PageShell>

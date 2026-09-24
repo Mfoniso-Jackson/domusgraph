@@ -1,4 +1,5 @@
 import { EmptyState, PageShell, SectionHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { submitPhotoAction } from "@/lib/actions";
 import { getCurrentUser, getProperty } from "@/lib/data";
 import { logAnalyticsEvent } from "@/lib/events";
@@ -33,10 +34,16 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
       <form action={action} className="panel grid gap-5">
         <label className="grid gap-2">
           <span className="label">Photo</span>
-          <input className="field" type="file" name="photo" accept="image/jpeg,image/png,image/webp" required />
+          <input
+            className="field file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white file:transition-colors file:duration-150 file:ease-out hover:file:bg-slate"
+            type="file"
+            name="photo"
+            accept="image/jpeg,image/png,image/webp"
+            required
+          />
         </label>
         <div>
-          <button className="button-primary" type="submit">Upload photo</button>
+          <SubmitButton pendingText="Uploading…">Upload photo</SubmitButton>
         </div>
       </form>
     </PageShell>
