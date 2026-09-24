@@ -30,6 +30,7 @@ export async function logHousingEvent(args: {
   eventType: HousingEventType;
   metadata?: Record<string, unknown>;
   isVerified?: boolean;
+  sourceId?: string | null;
 }) {
   if (!isConfigured()) return;
   const supabase = createSupabaseAdminClient();
@@ -40,6 +41,13 @@ export async function logHousingEvent(args: {
     actor_type: args.actorType ?? "anonymous",
     event_type: args.eventType,
     metadata: args.metadata ?? {},
-    is_verified: args.isVerified ?? false
+    is_verified: args.isVerified ?? false,
+    source_id: args.sourceId ?? null
   });
+}
+
+export async function setHousingEventVerified(sourceId: string, isVerified: boolean) {
+  if (!isConfigured()) return;
+  const supabase = createSupabaseAdminClient();
+  await supabase.from("housing_events").update({ is_verified: isVerified }).eq("source_id", sourceId);
 }

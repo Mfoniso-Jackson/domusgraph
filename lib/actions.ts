@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient, createSupabaseServerClient, isAdminEmail, isConfigured } from "@/lib/supabase";
 import { claimSchema, feedbackSchema, formObject, issueSchema, managerIntakeSchema, magicLinkSchema, onboardingSchema, propertySchema, referralSchema, reviewSchema } from "@/lib/schemas";
 import { getCurrentUser } from "@/lib/data";
-import { logAnalyticsEvent, logHousingEvent } from "@/lib/events";
+import { logAnalyticsEvent, logHousingEvent, setHousingEventVerified } from "@/lib/events";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { notifyAdminsOfPendingItem, notifyContributorOfModeration } from "@/lib/notifications";
 
@@ -60,19 +60,24 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
   const parsed = reviewSchema.parse(formObject(formData));
   const user = await requireUser();
   const supabase = await requireSupabase("submit_review");
-  const { error } = await supabase.from("reviews").insert({
-    ...parsed,
-    property_id: propertyId,
-    user_id: user.id,
-    moderation_status: "pending"
-  });
+  const { data, error } = await supabase
+    .from("reviews")
+    .insert({
+      ...parsed,
+      property_id: propertyId,
+      user_id: user.id,
+      moderation_status: "pending"
+    })
+    .select("id")
+    .single();
   if (error) throw error;
   await logAnalyticsEvent("review_completed", { property_id: propertyId });
   await logHousingEvent({
     propertyId,
     actorType: "renter",
     eventType: "review_submitted",
-    metadata: { overall_rating: parsed.overall_rating, would_rent_again: parsed.would_rent_again }
+    metadata: { overall_rating: parsed.overall_rating, would_rent_again: parsed.would_rent_again },
+    sourceId: data.id
   });
   await notifyAdminsOfPendingItem({ type: "review", propertyId });
   revalidatePath(`/property/${propertyId}`);
@@ -83,19 +88,24 @@ export async function submitIssueAction(propertyId: string, formData: FormData) 
   const parsed = issueSchema.parse(formObject(formData));
   const user = await requireUser();
   const supabase = await requireSupabase("submit_issue");
-  const { error } = await supabase.from("maintenance_issues").insert({
-    ...parsed,
-    property_id: propertyId,
-    user_id: user.id,
-    moderation_status: "pending"
-  });
+  const { data, error } = await supabase
+    .from("maintenance_issues")
+    .insert({
+      ...parsed,
+      property_id: propertyId,
+      user_id: user.id,
+      moderation_status: "pending"
+    })
+    .select("id")
+    .single();
   if (error) throw error;
   await logAnalyticsEvent("issue_completed", { property_id: propertyId, issue_type: parsed.issue_type, severity: parsed.severity });
   await logHousingEvent({
     propertyId,
     actorType: "renter",
     eventType: parsed.status === "Resolved" ? "maintenance_issue_resolved" : "maintenance_issue_reported",
-    metadata: { issue_type: parsed.issue_type, severity: parsed.severity, status: parsed.status, response_time: parsed.response_time }
+    metadata: { issue_type: parsed.issue_type, severity: parsed.severity, status: parsed.status, response_time: parsed.response_time },
+    sourceId: data.id
   });
   await notifyAdminsOfPendingItem({ type: "issue", propertyId });
   revalidatePath(`/property/${propertyId}`);
@@ -106,19 +116,24 @@ export async function submitClaimAction(propertyId: string, formData: FormData) 
   const parsed = claimSchema.parse(formObject(formData));
   const user = await requireUser();
   const supabase = await requireSupabase("submit_claim");
-  const { error } = await supabase.from("property_claims").insert({
-    ...parsed,
-    property_id: propertyId,
-    user_id: user.id,
-    claim_status: "pending"
-  });
+  const { data, error } = await supabase
+    .from("property_claims")
+    .insert({
+      ...parsed,
+      property_id: propertyId,
+      user_id: user.id,
+      claim_status: "pending"
+    })
+    .select("id")
+    .single();
   if (error) throw error;
   await logAnalyticsEvent("claim_completed", { property_id: propertyId, role: parsed.role, portfolio_size: parsed.portfolio_size });
   await logHousingEvent({
     propertyId,
     actorType: parsed.role === "Property manager" ? "property_manager" : parsed.role === "Letting agent" ? "letting_agent" : "landlord",
     eventType: "property_claimed",
-    metadata: { role: parsed.role, portfolio_size: parsed.portfolio_size, maintenance_workflow: parsed.maintenance_workflow }
+    metadata: { role: parsed.role, portfolio_size: parsed.portfolio_size, maintenance_workflow: parsed.maintenance_workflow },
+    sourceId: data.id
   });
   await notifyAdminsOfPendingItem({ type: "claim", propertyId });
   revalidatePath(`/property/${propertyId}`);
@@ -216,6 +231,7 @@ export async function moderateReviewAction(formData: FormData) {
   const status = String(formData.get("status"));
   const { data, error } = await supabase.from("reviews").update({ moderation_status: status }).eq("id", id).select("property_id, user_id").single();
   if (error) throw error;
+  await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "review", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
@@ -227,6 +243,7 @@ export async function moderateIssueAction(formData: FormData) {
   const status = String(formData.get("status"));
   const { data, error } = await supabase.from("maintenance_issues").update({ moderation_status: status }).eq("id", id).select("property_id, user_id").single();
   if (error) throw error;
+  await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "issue", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
@@ -238,6 +255,7 @@ export async function moderateClaimAction(formData: FormData) {
   const status = String(formData.get("status"));
   const { data, error } = await supabase.from("property_claims").update({ claim_status: status }).eq("id", id).select("property_id, user_id, email").single();
   if (error) throw error;
+  await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "claim", status, userId: data?.user_id, email: data?.email, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
