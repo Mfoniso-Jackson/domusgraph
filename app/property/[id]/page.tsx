@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, MessageSquare, Star } from "lucide-react";
@@ -15,7 +16,7 @@ function average(rows: Record<string, unknown>[], key: string) {
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await logAnalyticsEvent("property_view", { property_id: id });
-  const { property, reviews, issues, claims, events } = await getPropertyDetail(id);
+  const { property, reviews, issues, claims, events, photos } = await getPropertyDetail(id);
   if (!property) notFound();
 
   const timeline = [
@@ -50,6 +51,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           <Link href={`/property/${id}/review`} className="button-primary">Leave a review</Link>
           <Link href={`/property/${id}/issue`} className="button-secondary">Report an issue</Link>
           <Link href={`/property/${id}/claim`} className="button-secondary">Claim this property</Link>
+          <Link href={`/property/${id}/photo`} className="button-secondary">Add a photo</Link>
         </div>
       </div>
 
@@ -65,6 +67,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       <div className="mt-8">
         <CompletionScore property={property} />
       </div>
+
+      {photos.length ? (
+        <section className="mt-8 panel">
+          <h2 className="text-xl font-semibold text-ink">Photos</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {photos.map((photo) => (
+              <div key={String(photo.id)} className="relative aspect-square w-full overflow-hidden rounded">
+                <Image src={String(photo.image_url)} alt="Property evidence" fill className="object-cover" sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mt-8 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="panel">

@@ -47,8 +47,24 @@ export function TrustBadges({ verifiedReviews = 0, verifiedIssues = 0, claims = 
   );
 }
 
-export function ContributorReputation({ reviews, issues, claims, events, referrals }: { reviews: number; issues: number; claims: number; events: number; referrals: number }) {
-  const reputation = getReputationScore({ reviews, issues, claims }) + referrals * 5;
+export function ContributorReputation({
+  reviews,
+  issues,
+  claims,
+  events,
+  referrals,
+  verifiedReviews = 0,
+  verifiedIssues = 0
+}: {
+  reviews: number;
+  issues: number;
+  claims: number;
+  events: number;
+  referrals: number;
+  verifiedReviews?: number;
+  verifiedIssues?: number;
+}) {
+  const reputation = getReputationScore({ reviews, issues, claims, verifiedReviews, verifiedIssues }) + referrals * 5;
   return (
     <section className="panel">
       <div className="flex items-center gap-2">
@@ -57,8 +73,8 @@ export function ContributorReputation({ reviews, issues, claims, events, referra
       </div>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Metric label="Housing Contributions" value={events + reviews + issues + claims} />
-        <Metric label="Verified Reviews" value={0} />
-        <Metric label="Verified Issues" value={0} />
+        <Metric label="Verified Reviews" value={verifiedReviews} />
+        <Metric label="Verified Issues" value={verifiedIssues} />
         <Metric label="Reputation Points" value={reputation} />
       </div>
       <p className="mt-4 text-sm text-moss">Reputation rewards useful, trustworthy housing contributions. No financial incentives, no noisy gamification.</p>

@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/data";
 import { logAnalyticsEvent, logHousingEvent, setHousingEventVerified } from "@/lib/events";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { notifyAdminsOfPendingItem, notifyContributorOfModeration } from "@/lib/notifications";
+import { lookupPostcode } from "@/lib/postcode";
 
 async function requireSupabase(rateLimitAction?: string) {
   if (!isConfigured()) {
@@ -37,9 +38,26 @@ export async function createPropertyAction(formData: FormData) {
   const parsed = propertySchema.parse(formObject(formData));
   const supabase = await requireSupabase("create_property");
   const user = await getCurrentUser();
+
+  const { data: existing } = await supabase
+    .from("properties")
+    .select("id")
+    .eq("postcode", parsed.postcode)
+    .ilike("address_line_1", parsed.address_line_1.trim())
+    .maybeSingle();
+  if (existing) {
+    redirect(`/property/${existing.id}`);
+  }
+
+  let city = parsed.city;
+  if (!city) {
+    const lookup = await lookupPostcode(parsed.postcode);
+    if (lookup?.adminDistrict) city = lookup.adminDistrict;
+  }
+
   const { data, error } = await supabase
     .from("properties")
-    .insert({ ...parsed, created_by: user?.id ?? null })
+    .insert({ ...parsed, city, created_by: user?.id ?? null })
     .select("id")
     .single();
   if (error) throw error;
@@ -140,6 +158,47 @@ export async function submitClaimAction(propertyId: string, formData: FormData) 
   redirect(`/contribute/next?propertyId=${propertyId}&event=claim`);
 }
 
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+export async function submitPhotoAction(propertyId: string, formData: FormData) {
+  const user = await requireUser();
+  const supabase = await requireSupabase("submit_photo");
+
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Choose a photo to upload.");
+  }
+  if (file.size > MAX_PHOTO_BYTES) {
+    throw new Error("Photo must be 5MB or smaller.");
+  }
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    throw new Error("Photo must be a JPEG, PNG, or WebP image.");
+  }
+
+  const extension = file.name.split(".").pop() ?? "jpg";
+  const path = `${propertyId}/${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await supabase.storage.from("property-photos").upload(path, file, { contentType: file.type });
+  if (uploadError) throw uploadError;
+
+  const {
+    data: { publicUrl }
+  } = supabase.storage.from("property-photos").getPublicUrl(path);
+
+  const { data, error } = await supabase
+    .from("property_photos")
+    .insert({ property_id: propertyId, user_id: user.id, image_url: publicUrl, moderation_status: "pending" })
+    .select("id")
+    .single();
+  if (error) throw error;
+
+  await logAnalyticsEvent("photo_completed", { property_id: propertyId });
+  await logHousingEvent({ propertyId, actorType: "renter", eventType: "photo_uploaded", metadata: {}, sourceId: data.id });
+  await notifyAdminsOfPendingItem({ type: "photo", propertyId });
+  revalidatePath(`/property/${propertyId}`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=photo`);
+}
+
 export async function submitManagerIntakeAction(formData: FormData) {
   const parsed = managerIntakeSchema.parse(formObject(formData));
   const supabase = await requireSupabase("manager_intake");
@@ -229,7 +288,12 @@ export async function moderateReviewAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const { data, error } = await supabase.from("reviews").update({ moderation_status: status }).eq("id", id).select("property_id, user_id").single();
+  const { data, error } = await supabase
+    .from("reviews")
+    .update({ moderation_status: status, verification_level: status === "approved" ? "verified" : "unverified" })
+    .eq("id", id)
+    .select("property_id, user_id")
+    .single();
   if (error) throw error;
   await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "review", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
@@ -241,7 +305,12 @@ export async function moderateIssueAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const { data, error } = await supabase.from("maintenance_issues").update({ moderation_status: status }).eq("id", id).select("property_id, user_id").single();
+  const { data, error } = await supabase
+    .from("maintenance_issues")
+    .update({ moderation_status: status, verification_level: status === "approved" ? "verified" : "unverified" })
+    .eq("id", id)
+    .select("property_id, user_id")
+    .single();
   if (error) throw error;
   await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "issue", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
@@ -257,6 +326,23 @@ export async function moderateClaimAction(formData: FormData) {
   if (error) throw error;
   await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "claim", status, userId: data?.user_id, email: data?.email, propertyId: data?.property_id ?? null });
+  revalidatePath("/admin");
+  if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
+}
+
+export async function moderatePhotoAction(formData: FormData) {
+  const supabase = await requireAdmin();
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status"));
+  const { data, error } = await supabase
+    .from("property_photos")
+    .update({ moderation_status: status, verification_level: status === "approved" ? "verified" : "unverified" })
+    .eq("id", id)
+    .select("property_id, user_id")
+    .single();
+  if (error) throw error;
+  await setHousingEventVerified(id, status === "approved");
+  await notifyContributorOfModeration({ type: "photo", status, userId: data?.user_id, propertyId: data?.property_id ?? null });
   revalidatePath("/admin");
   if (data?.property_id) revalidatePath(`/property/${data.property_id}`);
 }

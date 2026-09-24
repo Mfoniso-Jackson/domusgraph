@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeUkPostcode } from "@/lib/postcode";
 
 export const rating = z.coerce.number().int().min(1).max(5);
 export const optionalText = z.string().trim().optional().nullable();
@@ -9,7 +10,18 @@ export const propertySchema = z.object({
   address_line_1: z.string().trim().min(3, "Address is required"),
   address_line_2: optionalText,
   city: optionalText,
-  postcode: z.string().trim().min(3, "Postcode is required"),
+  postcode: z
+    .string()
+    .trim()
+    .min(3, "Postcode is required")
+    .transform((value, ctx) => {
+      const normalized = normalizeUkPostcode(value);
+      if (!normalized) {
+        ctx.addIssue({ code: "custom", message: "Enter a valid UK postcode" });
+        return z.NEVER;
+      }
+      return normalized;
+    }),
   property_type: optionalPropertyType
 });
 

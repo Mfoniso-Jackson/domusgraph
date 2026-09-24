@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createSupabaseAdminClient, createSupabaseServerClient, isAdminEmail, isConfigured } from "@/lib/supabase";
+import { normalizeUkPostcode } from "@/lib/postcode";
 
 export type PropertySummary = {
   id: string;
@@ -60,21 +61,23 @@ export async function getProperty(id: string) {
 }
 
 export async function getPropertyDetail(id: string) {
-  if (!isConfigured()) return { property: null, reviews: [], issues: [], claims: [], events: [] };
+  if (!isConfigured()) return { property: null, reviews: [], issues: [], claims: [], events: [], photos: [] };
   const supabase = createSupabaseAdminClient();
-  const [property, reviews, issues, claims, events] = await Promise.all([
+  const [property, reviews, issues, claims, events, photos] = await Promise.all([
     supabase.from("property_summary").select("*").eq("id", id).single(),
     supabase.from("reviews").select("*").eq("property_id", id).eq("moderation_status", "approved").order("created_at", { ascending: false }),
     supabase.from("maintenance_issues").select("*").eq("property_id", id).eq("moderation_status", "approved").order("created_at", { ascending: false }),
     supabase.from("property_claims").select("*").eq("property_id", id).order("created_at", { ascending: false }),
-    supabase.from("housing_events").select("*").eq("property_id", id).order("created_at", { ascending: false }).limit(30)
+    supabase.from("housing_events").select("*").eq("property_id", id).order("created_at", { ascending: false }).limit(30),
+    supabase.from("property_photos").select("*").eq("property_id", id).eq("moderation_status", "approved").order("created_at", { ascending: false })
   ]);
   return {
     property: property.data,
     reviews: reviews.data ?? [],
     issues: issues.data ?? [],
     claims: claims.data ?? [],
-    events: events.data ?? []
+    events: events.data ?? [],
+    photos: photos.data ?? []
   };
 }
 
@@ -102,7 +105,7 @@ export async function getAdminData() {
   const user = await getCurrentUser();
   if (!user || !isAdminEmail(user.email)) return { allowed: false };
   const supabase = createSupabaseAdminClient();
-  const [properties, reviews, issues, claims, intakes, housingEvents, verifiedEvents, feedback, dailyEvents, topUsers, topCities, pendingReviews, pendingIssues, pendingClaims] = await Promise.all([
+  const [properties, reviews, issues, claims, intakes, housingEvents, verifiedEvents, feedback, dailyEvents, topUsers, topCities, pendingReviews, pendingIssues, pendingClaims, pendingPhotos] = await Promise.all([
     supabase.from("properties").select("id", { count: "exact", head: true }),
     supabase.from("reviews").select("*", { count: "exact" }).order("created_at", { ascending: false }).limit(8),
     supabase.from("maintenance_issues").select("*", { count: "exact" }).order("created_at", { ascending: false }).limit(8),
@@ -116,7 +119,8 @@ export async function getAdminData() {
     supabase.from("top_growing_cities").select("*").limit(10),
     supabase.from("reviews").select("*").eq("moderation_status", "pending").order("created_at", { ascending: true }).limit(20),
     supabase.from("maintenance_issues").select("*").eq("moderation_status", "pending").order("created_at", { ascending: true }).limit(20),
-    supabase.from("property_claims").select("*").eq("claim_status", "pending").order("created_at", { ascending: true }).limit(20)
+    supabase.from("property_claims").select("*").eq("claim_status", "pending").order("created_at", { ascending: true }).limit(20),
+    supabase.from("property_photos").select("*").eq("moderation_status", "pending").order("created_at", { ascending: true }).limit(20)
   ]);
   const propertyCount = properties.count ?? 0;
   const reviewCount = reviews.count ?? 0;
@@ -141,6 +145,7 @@ export async function getAdminData() {
     pendingReviews: pendingReviews.data ?? [],
     pendingIssues: pendingIssues.data ?? [],
     pendingClaims: pendingClaims.data ?? [],
+    pendingPhotos: pendingPhotos.data ?? [],
     recentHousingEvents: housingEvents.data ?? [],
     recentFeedback: feedback.data ?? [],
     dailyGrowth: dailyEvents.data ?? [],
@@ -167,6 +172,7 @@ export async function getPropertiesByCity(city: string) {
 export async function getPropertiesByPostcode(postcode: string) {
   if (!isConfigured()) return [] as PropertySummary[];
   const supabase = createSupabaseAdminClient();
-  const { data } = await supabase.from("property_summary").select("*").ilike("postcode", `${postcode}%`).order("last_activity", { ascending: false }).limit(50);
+  const term = normalizeUkPostcode(postcode) ?? postcode;
+  const { data } = await supabase.from("property_summary").select("*").ilike("postcode", `${term}%`).order("last_activity", { ascending: false }).limit(50);
   return data ?? [];
 }

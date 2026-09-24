@@ -24,7 +24,15 @@ export default async function DashboardPage() {
         <Stat label="Claimed properties" value={claims.length} />
       </div>
       <div className="mt-8">
-        <ContributorReputation reviews={reviews.length} issues={issues.length} claims={claims.length} events={housingEvents.length} referrals={referrals.length} />
+        <ContributorReputation
+          reviews={reviews.length}
+          issues={issues.length}
+          claims={claims.length}
+          events={housingEvents.length}
+          referrals={referrals.length}
+          verifiedReviews={reviews.filter((item) => item.verification_level === "verified").length}
+          verifiedIssues={issues.filter((item) => item.verification_level === "verified").length}
+        />
       </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <Activity title="Recent reviews" rows={reviews.map((item) => ({ id: item.id, label: `${item.overall_rating}/5 review`, href: `/property/${item.property_id}` }))} />

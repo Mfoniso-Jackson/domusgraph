@@ -32,12 +32,13 @@ async function getUserEmail(userId: string) {
   return data.user?.email ?? null;
 }
 
-export type PendingItemType = "review" | "issue" | "claim";
+export type PendingItemType = "review" | "issue" | "claim" | "photo";
 
 const pendingItemLabels: Record<PendingItemType, string> = {
   review: "review",
   issue: "maintenance issue",
-  claim: "property claim"
+  claim: "property claim",
+  photo: "photo"
 };
 
 export async function notifyAdminsOfPendingItem(input: { type: PendingItemType; propertyId: string | null }) {

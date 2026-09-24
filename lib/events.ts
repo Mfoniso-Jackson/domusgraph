@@ -11,7 +11,8 @@ export type HousingEventType =
   | "property_manager_signup"
   | "property_created"
   | "feedback_submitted"
-  | "referral_created";
+  | "referral_created"
+  | "photo_uploaded";
 
 export async function logAnalyticsEvent(eventName: string, payload: Record<string, unknown> = {}) {
   if (!isConfigured()) return;

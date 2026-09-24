@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { EmptyState, PageShell, SectionHeader, Stat } from "@/components/ui";
 import { getAdminData } from "@/lib/data";
-import { moderateClaimAction, moderateIssueAction, moderateReviewAction } from "@/lib/actions";
+import { moderateClaimAction, moderateIssueAction, moderatePhotoAction, moderateReviewAction } from "@/lib/actions";
 
 const exports = [
   ["Properties", "properties"],
@@ -44,6 +44,7 @@ export default async function AdminPage() {
     pendingReviews: Record<string, string | number | null>[];
     pendingIssues: Record<string, string | number | null>[];
     pendingClaims: Record<string, string | number | null>[];
+    pendingPhotos: Record<string, string | number | null>[];
     recentHousingEvents: Record<string, string | number | boolean | null>[];
     recentFeedback: Record<string, string | number | null>[];
     dailyGrowth: Record<string, string | number | null>[];
@@ -84,6 +85,11 @@ export default async function AdminPage() {
             title={`Pending claims (${adminData.pendingClaims.length})`}
             rows={adminData.pendingClaims.map((item) => ({ id: String(item.id), label: `${item.name} · ${item.role}` }))}
             action={moderateClaimAction}
+          />
+          <ModerationList
+            title={`Pending photos (${adminData.pendingPhotos.length})`}
+            rows={adminData.pendingPhotos.map((item) => ({ id: String(item.id), label: "Photo evidence", imageUrl: String(item.image_url) }))}
+            action={moderatePhotoAction}
           />
         </div>
       </section>
@@ -130,7 +136,7 @@ function ModerationList({
   action
 }: {
   title: string;
-  rows: { id: string; label: string }[];
+  rows: { id: string; label: string; imageUrl?: string }[];
   action: (formData: FormData) => void | Promise<void>;
 }) {
   return (
@@ -140,7 +146,13 @@ function ModerationList({
         {rows.length ? (
           rows.map((row) => (
             <div key={row.id} className="flex items-center justify-between gap-3 rounded bg-mist px-3 py-2 text-sm text-ink">
-              <span className="truncate">{row.label}</span>
+              <span className="flex min-w-0 items-center gap-2 truncate">
+                {row.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={row.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
+                ) : null}
+                <span className="truncate">{row.label}</span>
+              </span>
               <div className="flex shrink-0 gap-2">
                 <form action={action}>
                   <input type="hidden" name="id" value={row.id} />
