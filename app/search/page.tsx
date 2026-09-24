@@ -26,7 +26,15 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <section className="panel">
             <h2 className="font-semibold text-ink">Recent searches</h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              {discovery.recentSearches.map((term) => <a key={term} className="rounded bg-mist px-3 py-1 text-sm text-ink" href={`/search?q=${encodeURIComponent(term)}`}>{term}</a>)}
+              {discovery.recentSearches.map((term) => (
+                <a
+                  key={term}
+                  className="rounded-full bg-mist px-3 py-1 text-sm text-ink transition-colors duration-150 ease-out hover:bg-signal/10 hover:text-signal"
+                  href={`/search?q=${encodeURIComponent(term)}`}
+                >
+                  {term}
+                </a>
+              ))}
             </div>
           </section>
           <section className="panel">

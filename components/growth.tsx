@@ -12,17 +12,24 @@ export function CompletionScore({ property }: { property: CompletionInput }) {
           <h2 className="text-xl font-semibold text-ink">Housing Profile Completeness</h2>
           <p className="mt-1 text-sm text-slate">Complete profiles create stronger housing graph signals.</p>
         </div>
-        <div className="text-3xl font-bold text-signal">{completion.score}%</div>
+        <div className="font-mono text-3xl font-bold tabular-nums text-signal">{completion.score}%</div>
       </div>
-      <div className="mt-4 h-2 rounded bg-mist">
-        <div className="h-2 rounded bg-signal" style={{ width: `${completion.score}%` }} />
+      <div
+        className="mt-4 h-2 overflow-hidden rounded-full bg-mist"
+        role="progressbar"
+        aria-valuenow={completion.score}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Housing profile completeness"
+      >
+        <div className="h-2 rounded-full bg-signal transition-[width] duration-500 ease-out" style={{ width: `${completion.score}%` }} />
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {completionParts.map((part) => {
           const done = completion.checks[part.key];
           return (
             <div key={part.key} className="flex items-center gap-2 text-sm text-ink">
-              {done ? <CheckCircle2 className="h-4 w-4 text-leaf" /> : <Circle className="h-4 w-4 text-slate" />}
+              {done ? <CheckCircle2 className="h-4 w-4 text-leaf" aria-hidden="true" /> : <Circle className="h-4 w-4 text-slate" aria-hidden="true" />}
               <span>{part.label}</span>
             </div>
           );
@@ -38,8 +45,8 @@ export function TrustBadges({ verifiedReviews = 0, verifiedIssues = 0, claims = 
   return (
     <div className="flex flex-wrap gap-2">
       {badges.map((badge) => (
-        <span key={badge} className="inline-flex items-center gap-1 rounded bg-mist px-3 py-1 text-xs font-semibold text-ink">
-          <ShieldCheck className="h-3.5 w-3.5 text-signal" />
+        <span key={badge} className="inline-flex items-center gap-1 rounded-full bg-mist px-3 py-1 text-xs font-semibold text-ink">
+          <ShieldCheck className="h-3.5 w-3.5 text-signal" aria-hidden="true" />
           {badge}
         </span>
       ))}
@@ -68,7 +75,7 @@ export function ContributorReputation({
   return (
     <section className="panel">
       <div className="flex items-center gap-2">
-        <TrendingUp className="h-5 w-5 text-signal" />
+        <TrendingUp className="h-5 w-5 text-signal" aria-hidden="true" />
         <h2 className="text-xl font-semibold text-ink">Housing Reputation</h2>
       </div>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -84,8 +91,8 @@ export function ContributorReputation({
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded border border-slate/15 bg-mist p-3">
-      <div className="text-xl font-bold text-ink">{value}</div>
+    <div className="rounded-lg border border-slate/15 bg-mist p-3">
+      <div className="font-mono text-xl font-bold tabular-nums text-ink">{value}</div>
       <div className="text-sm text-slate">{label}</div>
     </div>
   );

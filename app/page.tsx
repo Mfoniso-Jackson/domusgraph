@@ -31,23 +31,26 @@ export default async function HomePage() {
             <Link href="/onboarding" className="button-secondary">Start onboarding</Link>
           </div>
         </div>
-        <div className="rounded border border-slate/15 bg-white p-6 shadow-soft">
+        <div className="rounded-lg border border-slate/15 bg-white p-6 shadow-soft">
           <div className="flex items-center gap-3 border-b border-slate/10 pb-4">
-            <ShieldCheck className="h-8 w-8 text-signal" />
+            <ShieldCheck className="h-8 w-8 text-signal" aria-hidden="true" />
             <div>
               <h2 className="font-semibold text-ink">{hasData ? "Housing graph snapshot" : "Just getting started"}</h2>
               <p className="text-sm text-slate">{hasData ? "Real totals from structured tenant and manager signals." : "No properties tracked yet — be the first to add one."}</p>
             </div>
           </div>
           {hasData ? (
-            <div className="mt-5 grid gap-3">
+            <div className="mt-5 grid grid-cols-2 gap-3">
               {[
-                `Properties tracked: ${stats.properties}`,
-                `Reviews submitted: ${stats.reviews}`,
-                `Maintenance issues reported: ${stats.issues}`,
-                `Verified housing events: ${stats.verifiedEvents}`
-              ].map((item) => (
-                <div key={item} className="rounded bg-mist px-4 py-3 text-sm font-medium text-ink">{item}</div>
+                ["Properties tracked", stats.properties],
+                ["Reviews submitted", stats.reviews],
+                ["Issues reported", stats.issues],
+                ["Verified events", stats.verifiedEvents]
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-md bg-mist px-4 py-3">
+                  <div className="font-mono text-xl font-bold tabular-nums text-ink">{value}</div>
+                  <div className="text-xs text-slate">{label}</div>
+                </div>
               ))}
             </div>
           ) : (
@@ -66,7 +69,10 @@ export default async function HomePage() {
         <p className="mt-2 max-w-2xl text-slate">A structured network of properties, experiences, maintenance events, ownership signals, and outcomes.</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {graphItems.map(([label, Icon]) => (
-            <div key={label} className="rounded border border-slate/15 bg-white p-4">
+            <div
+              key={label}
+              className="rounded-lg border border-slate/15 bg-white p-4 transition-[border-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-signal/30 hover:shadow-md"
+            >
               <Icon className="h-6 w-6 text-signal" />
               <div className="mt-3 font-semibold text-ink">{label}</div>
             </div>
@@ -74,7 +80,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="rounded border border-slate/15 bg-ink p-6 text-white">
+      <section className="rounded-lg border border-slate/15 bg-ink p-6 text-white">
         <p className="max-w-3xl text-lg font-semibold">We are building a more transparent rental market through verified housing experiences.</p>
       </section>
     </PageShell>
