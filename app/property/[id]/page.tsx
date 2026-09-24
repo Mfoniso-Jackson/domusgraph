@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, MessageSquare, Star } from "lucide-react";
+import { AlertTriangle, MessageSquare, Star, Zap } from "lucide-react";
 import { EmptyState, PageShell, Stat } from "@/components/ui";
 import { getPropertyDetail } from "@/lib/data";
 import { CompletionScore, ContributionPrompt, TrustBadges } from "@/components/growth";
 import { logAnalyticsEvent } from "@/lib/events";
+import { epcCertificateUrl, findMatchingEpcRecord, isEpcConfigured, searchEpcByPostcode } from "@/lib/epc";
 
 function average(rows: Record<string, unknown>[], key: string) {
   const values = rows.map((row) => Number(row[key])).filter(Boolean);
@@ -18,6 +19,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await logAnalyticsEvent("property_view", { property_id: id });
   const { property, reviews, issues, claims, events, photos } = await getPropertyDetail(id);
   if (!property) notFound();
+
+  const epcRecords = property.postcode && isEpcConfigured() ? await searchEpcByPostcode(property.postcode) : [];
+  const epcMatch = epcRecords.length ? findMatchingEpcRecord(epcRecords, property.address_line_1, property.address_line_2) : null;
 
   const timeline = [
     ...reviews.map((review) => ({ type: "Review", icon: MessageSquare, date: review.created_at, title: `${review.overall_rating}/5 overall`, body: review.review_text })),
@@ -38,13 +42,24 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           <p className="mb-2 text-sm font-semibold uppercase text-clay">Property profile</p>
           <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{property.address_line_1}</h1>
           <p className="mt-2 text-moss">{[property.address_line_2, property.city, property.postcode].filter(Boolean).join(", ")}</p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <TrustBadges
               verifiedReviews={reviews.filter((review) => review.verification_level === "verified").length}
               verifiedIssues={issues.filter((issue) => issue.verification_level === "verified").length}
               claims={claims.length}
               approvedClaim={claims.some((claim) => claim.claim_status === "approved")}
             />
+            {epcMatch ? (
+              <a
+                href={epcCertificateUrl(epcMatch.certificateNumber)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded bg-mist px-3 py-1 text-xs font-semibold text-ink hover:text-clay"
+              >
+                <Zap className="h-3.5 w-3.5 text-clay" />
+                Energy rating {epcMatch.currentEnergyEfficiencyBand}
+              </a>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
