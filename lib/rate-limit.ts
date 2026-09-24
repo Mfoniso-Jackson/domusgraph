@@ -14,11 +14,7 @@ export async function getRequestIp() {
   return h.get("x-real-ip") ?? "unknown";
 }
 
-export async function enforceRateLimit(action: string, { windowMs = WINDOW_MS, max = MAX_REQUESTS } = {}) {
-  const ip = await getRequestIp();
-  const key = `${action}:${ip}`;
-  const now = Date.now();
-
+export function checkRateLimit(key: string, { windowMs = WINDOW_MS, max = MAX_REQUESTS } = {}, now = Date.now()) {
   if (callsSinceSweep++ > 200) {
     callsSinceSweep = 0;
     for (const [bucketKey, bucket] of buckets) {
@@ -35,4 +31,14 @@ export async function enforceRateLimit(action: string, { windowMs = WINDOW_MS, m
     throw new Error("Too many submissions from this connection. Please wait a few minutes and try again.");
   }
   bucket.count += 1;
+}
+
+export function resetRateLimitState() {
+  buckets.clear();
+  callsSinceSweep = 0;
+}
+
+export async function enforceRateLimit(action: string, options: { windowMs?: number; max?: number } = {}) {
+  const ip = await getRequestIp();
+  checkRateLimit(`${action}:${ip}`, options);
 }
