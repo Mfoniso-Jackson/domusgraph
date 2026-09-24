@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Building2, ClipboardCheck, Hammer, KeyRound, MessageSquare, ShieldCheck } from "lucide-react";
 import { PageShell } from "@/components/ui";
+import { getPlatformStats } from "@/lib/data";
 
 const graphItems = [
   ["Properties", Building2],
@@ -10,7 +11,10 @@ const graphItems = [
   ["Outcomes", ClipboardCheck]
 ] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const stats = await getPlatformStats();
+  const hasData = stats.properties > 0;
+
   return (
     <PageShell>
       <section className="grid gap-10 py-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
@@ -31,15 +35,29 @@ export default function HomePage() {
           <div className="flex items-center gap-3 border-b border-moss/10 pb-4">
             <ShieldCheck className="h-8 w-8 text-clay" />
             <div>
-              <h2 className="font-semibold text-ink">Rental risk snapshot</h2>
-              <p className="text-sm text-moss">Built from structured tenant and manager signals.</p>
+              <h2 className="font-semibold text-ink">{hasData ? "Housing graph snapshot" : "Just getting started"}</h2>
+              <p className="text-sm text-moss">{hasData ? "Real totals from structured tenant and manager signals." : "No properties tracked yet — be the first to add one."}</p>
             </div>
           </div>
-          <div className="mt-5 grid gap-3">
-            {["Maintenance response: 4-7 days", "Open safety reports: 1", "Deposit fairness: 3.8/5", "Recent activity: 12 days ago"].map((item) => (
-              <div key={item} className="rounded bg-mist px-4 py-3 text-sm font-medium text-ink">{item}</div>
-            ))}
-          </div>
+          {hasData ? (
+            <div className="mt-5 grid gap-3">
+              {[
+                `Properties tracked: ${stats.properties}`,
+                `Reviews submitted: ${stats.reviews}`,
+                `Maintenance issues reported: ${stats.issues}`,
+                `Verified housing events: ${stats.verifiedEvents}`
+              ].map((item) => (
+                <div key={item} className="rounded bg-mist px-4 py-3 text-sm font-medium text-ink">{item}</div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 grid gap-3">
+              <p className="text-sm leading-6 text-moss">
+                DomusGraph is brand new — every property profile, review, and maintenance report on here comes from a real person&apos;s real experience. Nothing here is fabricated or filled in for show.
+              </p>
+              <Link href="/search" className="button-primary w-fit">Add the first property</Link>
+            </div>
+          )}
         </div>
       </section>
 

@@ -26,6 +26,23 @@ export const getCurrentUser = cache(async () => {
   return data.user;
 });
 
+export async function getPlatformStats() {
+  if (!isConfigured()) return { properties: 0, reviews: 0, issues: 0, verifiedEvents: 0 };
+  const supabase = createSupabaseAdminClient();
+  const [properties, reviews, issues, verifiedEvents] = await Promise.all([
+    supabase.from("properties").select("id", { count: "exact", head: true }),
+    supabase.from("reviews").select("id", { count: "exact", head: true }).eq("moderation_status", "approved"),
+    supabase.from("maintenance_issues").select("id", { count: "exact", head: true }).eq("moderation_status", "approved"),
+    supabase.from("housing_events").select("id", { count: "exact", head: true }).eq("is_verified", true)
+  ]);
+  return {
+    properties: properties.count ?? 0,
+    reviews: reviews.count ?? 0,
+    issues: issues.count ?? 0,
+    verifiedEvents: verifiedEvents.count ?? 0
+  };
+}
+
 export async function searchProperties(query = "") {
   if (!isConfigured()) return [] as PropertySummary[];
   const supabase = createSupabaseAdminClient();
