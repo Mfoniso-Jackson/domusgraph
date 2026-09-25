@@ -35,7 +35,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
         <label className="grid gap-2">
           <span className="label">Photo</span>
           <input
-            className="field file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white file:transition-colors file:duration-150 file:ease-out hover:file:bg-slate"
+            className="field file:mr-3 file:rounded-md file:border-0 file:bg-onyx file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white file:transition-colors file:duration-150 file:ease-out hover:file:bg-graphite"
             type="file"
             name="photo"
             accept="image/jpeg,image/png,image/webp"

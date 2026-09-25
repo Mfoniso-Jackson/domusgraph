@@ -16,7 +16,7 @@ export default function SearchLoading() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-lg border border-slate/15 bg-white p-5 shadow-soft">
+          <div key={i} className="rounded-lg border border-slate/15 bg-surface p-5 shadow-soft">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <Skeleton className="h-5 w-3/4" />

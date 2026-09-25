@@ -31,7 +31,7 @@ export default async function HomePage() {
             <Link href="/onboarding" className="button-secondary">Start onboarding</Link>
           </div>
         </div>
-        <div className="rounded-lg border border-slate/15 bg-white p-6 shadow-soft">
+        <div className="rounded-lg border border-slate/15 bg-surface p-6 shadow-soft">
           <div className="flex items-center gap-3 border-b border-slate/10 pb-4">
             <ShieldCheck className="h-8 w-8 text-signal" aria-hidden="true" />
             <div>
@@ -71,7 +71,7 @@ export default async function HomePage() {
           {graphItems.map(([label, Icon]) => (
             <div
               key={label}
-              className="rounded-lg border border-slate/15 bg-white p-4 transition-[border-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-signal/30 hover:shadow-md"
+              className="rounded-lg border border-slate/15 bg-surface p-4 transition-[border-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-signal/30 hover:shadow-md"
             >
               <Icon className="h-6 w-6 text-signal" />
               <div className="mt-3 font-semibold text-ink">{label}</div>
@@ -80,7 +80,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate/15 bg-ink p-6 text-white">
+      <section className="rounded-lg border border-slate/15 bg-onyx p-6 text-white">
         <p className="max-w-3xl text-lg font-semibold">We are building a more transparent rental market through verified housing experiences.</p>
       </section>
     </PageShell>

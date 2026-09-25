@@ -28,9 +28,48 @@ This project predates shadcn/ui — it uses a hand-rolled component library (`co
 
 **Important — hex, not `oklch()`, in the config.** Tailwind v3's `@apply` cannot resolve opacity modifiers (`border-slate/20`, `ring-signal/20`) on a raw `oklch()` string in `theme.extend.colors` — it throws a build error. The hex values above are the same colors, converted via the exact OKLCB→sRGB reference math (not an approximation), and are what's actually in the config.
 
-**No dark mode.** The project has never had a dark mode (no `.dark` class usage, no theme toggle anywhere). Only light-mode tokens were derived. Adding dark mode is a separate, larger piece of work — flag it before assuming this palette covers it.
-
 Previous palette was `ink #17201b / moss #385244 / leaf #5c8068 / clay #b25f45 / paper #f7f4ee / mist #e8eee9` (warm terracotta/moss). `clay` was renamed to `signal` and `moss` to `slate` project-wide (17 files) since keeping a color literally named "clay" while it's a blue-gray would be a naming smell.
+
+## Dark mode
+
+Added 2026-09-25. `ink` / `slate` / `leaf` / `signal` / `paper` / `mist` are CSS-variable-backed (`rgb(var(--color-x) / <alpha-value>)` in `tailwind.config.ts`, values defined in `:root` and `.dark` in `app/globals.css`), so every existing usage of these classes — `text-ink`, `border-slate/15`, `bg-mist`, opacity modifiers included — adapts automatically. Dark values are derived from the same seeds (hue-preserved, lightness/chroma adjusted for on-dark contrast), not a naive invert.
+
+A new `surface` token (white in light mode, `#121b22` elevated dark in dark mode) replaced literal `bg-white` for card/panel backgrounds project-wide.
+
+Two tokens are intentionally **fixed** (do not vary with `.dark`): `onyx` (`#091015`) and `graphite` (`#465865`). These back the handful of solid dark CTA blocks — `.button-primary`, the landing-page hero band, the photo-upload file-input button — that stay dark in both themes by design, so their `text-white` always has contrast. Do not use `ink`/`slate` for a block that must always render dark; use `onyx`/`graphite`.
+
+**The header logo is an inline SVG component (`components/logo.tsx`), not a static file rendered via `next/image`.** This is required, not stylistic — `<Image src="/logo.svg">` bakes in the SVG's own hardcoded hex fills, which can't respond to the `.dark` class, and the "Domus" wordmark (fill `#091015`, the light-mode `ink` value) was briefly invisible against a dark header before this was caught. `public/logo.svg` still exists as a standalone downloadable asset but is no longer referenced by the app; any future in-app use of the mark should go through the `Logo` component, not that file.
+
+### Dark seeds
+
+| Role | Light hex | Dark hex | RGB triple (dark, for `--color-*`) |
+|---|---|---|---|
+| `paper` (page bg) | `#f6f9fb` | `#0b1218` | `11 18 24` |
+| `surface` (card bg) | `#ffffff` | `#121b22` | `18 27 34` |
+| `mist` (subtle bg) | `#edf1f4` | `#1a242c` | `26 36 44` |
+| `ink` (fg text) | `#091015` | `#eef3f6` | `238 243 246` |
+| `slate` (muted fg/border) | `#465865` | `#93a5b0` | `147 165 176` |
+| `signal` (brand accent) | `#18364a` | `#7fb8e6` | `127 184 230` |
+| `leaf` (success accent) | `#31573f` | `#6fd39a` | `111 211 154` |
+
+### Dark contrast check (computed, not approximated)
+
+| Pair | Ratio |
+|---|---|
+| ink on paper | 16.86:1 |
+| ink on surface | 15.58:1 |
+| slate on paper | 7.41:1 |
+| slate on surface | 6.84:1 |
+| signal on paper | 8.89:1 |
+| signal on surface | 8.21:1 |
+| leaf on paper | 10.29:1 |
+| leaf on surface | 9.51:1 |
+
+Every pair clears AA (4.5:1) with room to spare; all clear AAA (7:1) except slate-on-surface, which still clears AA comfortably.
+
+### Toggle behavior
+
+`components/theme-toggle.tsx` is a header button (sun/moon, `lucide-react`) that flips a `.dark` class on `<html>` and persists the choice to `localStorage` (`theme: "light" | "dark"`). An inline script in `app/layout.tsx` (`themeInitScript`, runs synchronously as the first element in `<body>`, before paint) reads `localStorage` and falls back to `prefers-color-scheme` when nothing is stored, so there's no flash of the wrong theme on load. `<html>` carries `suppressHydrationWarning` because this script intentionally mutates `className` before React hydrates.
 
 ### Contrast check (all pairs, WCAG AA)
 

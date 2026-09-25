@@ -5,7 +5,7 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
   return (
     <Link
       href={`/property/${property.id}`}
-      className="block rounded-lg border border-slate/15 bg-white p-5 shadow-soft transition-[border-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-signal/40 hover:shadow-lg"
+      className="block rounded-lg border border-slate/15 bg-surface p-5 shadow-soft transition-[border-color,box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:border-signal/40 hover:shadow-lg"
     >
       <div className="flex items-start justify-between gap-4">
         <div>

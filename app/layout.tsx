@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { getCurrentUser } from "@/lib/data";
 import { signOutAction } from "@/lib/actions";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Logo } from "@/components/logo";
+
+const themeInitScript = `(function(){try{var s=localStorage.getItem('theme');var d=s==='dark'||(s!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -18,12 +21,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getCurrentUser();
 
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
       <body className="font-sans antialiased">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <header className="border-b border-slate/15 bg-paper/90">
           <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
             <Link href="/" className="flex items-center">
-              <Image src="/logo.svg" alt="DomusGraph" width={172} height={32} priority className="h-7 w-auto" />
+              <Logo className="h-7 w-auto" />
             </Link>
             <div className="flex items-center gap-3 text-sm font-medium text-slate">
               <Link href="/search" className="hover:text-signal">Search</Link>
@@ -38,11 +42,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               ) : (
                 <Link href="/auth/sign-in" className="hover:text-signal">Sign in</Link>
               )}
+              <ThemeToggle />
             </div>
           </nav>
         </header>
         <main>{children}</main>
-        <footer className="border-t border-slate/15 bg-white">
+        <footer className="border-t border-slate/15 bg-surface">
           <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-slate">
             <p>
               DomusGraph is an early housing transparency platform. Reviews and reports may be user-submitted and should be considered alongside independent checks.

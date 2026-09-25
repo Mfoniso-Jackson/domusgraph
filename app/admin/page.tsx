@@ -160,14 +160,14 @@ function ModerationList({
                 <form action={action}>
                   <input type="hidden" name="id" value={row.id} />
                   <input type="hidden" name="status" value="approved" />
-                  <button type="submit" className={`${compactButtonBase} border border-leaf/30 bg-white text-leaf hover:bg-leaf/10`}>
+                  <button type="submit" className={`${compactButtonBase} border border-leaf/30 bg-surface text-leaf hover:bg-leaf/10`}>
                     Approve
                   </button>
                 </form>
                 <form action={action}>
                   <input type="hidden" name="id" value={row.id} />
                   <input type="hidden" name="status" value="rejected" />
-                  <button type="submit" className={`${compactButtonBase} border border-slate/25 bg-white text-slate hover:border-signal/40 hover:text-signal`}>
+                  <button type="submit" className={`${compactButtonBase} border border-slate/25 bg-surface text-slate hover:border-signal/40 hover:text-signal`}>
                     Reject
                   </button>
                 </form>

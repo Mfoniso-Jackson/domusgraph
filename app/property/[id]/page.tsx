@@ -143,7 +143,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
       </section>
 
-      <section className="mt-8 rounded-lg border border-slate/15 bg-white p-5">
+      <section className="mt-8 rounded-lg border border-slate/15 bg-surface p-5">
         <div className="flex items-center gap-2 text-sm font-semibold text-slate">
           <Star className="h-4 w-4 text-signal" aria-hidden="true" />
           Useful with little data
