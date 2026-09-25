@@ -29,6 +29,19 @@ export function getPropertyCompletion(input: CompletionInput) {
   return { score, checks };
 }
 
+/**
+ * A submission only counts toward property_summary once an admin approves
+ * it (reviews/issues/photos/claims are all moderation-gated), so a fresh
+ * submission never actually changes the completeness score yet — showing
+ * an already-moved score would be dishonest. This tells the contributor
+ * what their submission will unlock once verified, without claiming it
+ * already happened.
+ */
+export function getUnlockPreview(category: "reviews" | "issues" | "photos" | "claimed", currentCount: number) {
+  const part = completionParts.find((p) => p.key === category)!;
+  return currentCount > 0 ? { willUnlock: false as const, weight: 0, label: part.label } : { willUnlock: true as const, weight: part.weight, label: part.label };
+}
+
 export function getReputationScore(input: { reviews: number; issues: number; claims: number; verifiedReviews?: number; verifiedIssues?: number }) {
   return input.reviews * 15 + input.issues * 20 + input.claims * 10 + (input.verifiedReviews ?? 0) * 25 + (input.verifiedIssues ?? 0) * 30;
 }

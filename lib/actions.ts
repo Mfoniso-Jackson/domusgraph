@@ -10,6 +10,7 @@ import { enforceRateLimit } from "@/lib/rate-limit";
 import { notifyAdminsOfPendingItem, notifyContributorOfModeration, notifyReferralInvite } from "@/lib/notifications";
 import { lookupPostcode } from "@/lib/postcode";
 import { attributeReferralIfPresent } from "@/lib/referrals";
+import { getUnlockPreview } from "@/lib/growth";
 
 async function requireSupabase(rateLimitAction?: string) {
   if (!isConfigured()) {
@@ -33,6 +34,15 @@ async function requireUser() {
     throw new Error("Sign in required to submit this.");
   }
   return user;
+}
+
+const UNLOCK_COLUMN = { reviews: "review_count", issues: "issue_count", photos: "photo_count", claimed: "claimed_count" } as const;
+
+async function unlockQueryParam(supabase: ReturnType<typeof createSupabaseAdminClient>, propertyId: string, category: keyof typeof UNLOCK_COLUMN) {
+  const { data } = await supabase.from("property_summary").select(UNLOCK_COLUMN[category]).eq("id", propertyId).single();
+  const currentCount = Number((data as Record<string, number> | null)?.[UNLOCK_COLUMN[category]] ?? 0);
+  const preview = getUnlockPreview(category, currentCount);
+  return preview.willUnlock ? `&unlock=${preview.weight}&unlockLabel=${encodeURIComponent(preview.label)}` : "";
 }
 
 export async function createPropertyAction(formData: FormData) {
@@ -79,6 +89,7 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
   const parsed = reviewSchema.parse(formObject(formData));
   const user = await requireUser();
   const supabase = await requireSupabase("submit_review");
+  const unlock = await unlockQueryParam(supabase, propertyId, "reviews");
   const { data, error } = await supabase
     .from("reviews")
     .insert({
@@ -101,13 +112,14 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
   await notifyAdminsOfPendingItem({ type: "review", propertyId });
   await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/contribute/next?propertyId=${propertyId}&event=review`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=review${unlock}`);
 }
 
 export async function submitIssueAction(propertyId: string, formData: FormData) {
   const parsed = issueSchema.parse(formObject(formData));
   const user = await requireUser();
   const supabase = await requireSupabase("submit_issue");
+  const unlock = await unlockQueryParam(supabase, propertyId, "issues");
   const { data, error } = await supabase
     .from("maintenance_issues")
     .insert({
@@ -130,13 +142,14 @@ export async function submitIssueAction(propertyId: string, formData: FormData) 
   await notifyAdminsOfPendingItem({ type: "issue", propertyId });
   await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/contribute/next?propertyId=${propertyId}&event=issue`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=issue${unlock}`);
 }
 
 export async function submitClaimAction(propertyId: string, formData: FormData) {
   const parsed = claimSchema.parse(formObject(formData));
   const user = await requireUser();
   const supabase = await requireSupabase("submit_claim");
+  const unlock = await unlockQueryParam(supabase, propertyId, "claimed");
   const { data, error } = await supabase
     .from("property_claims")
     .insert({
@@ -159,7 +172,7 @@ export async function submitClaimAction(propertyId: string, formData: FormData) 
   await notifyAdminsOfPendingItem({ type: "claim", propertyId });
   await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/contribute/next?propertyId=${propertyId}&event=claim`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=claim${unlock}`);
 }
 
 const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -179,6 +192,8 @@ export async function submitPhotoAction(propertyId: string, formData: FormData) 
   if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
     throw new Error("Photo must be a JPEG, PNG, or WebP image.");
   }
+
+  const unlock = await unlockQueryParam(supabase, propertyId, "photos");
 
   const extension = file.name.split(".").pop() ?? "jpg";
   const path = `${propertyId}/${crypto.randomUUID()}.${extension}`;
@@ -201,7 +216,7 @@ export async function submitPhotoAction(propertyId: string, formData: FormData) 
   await notifyAdminsOfPendingItem({ type: "photo", propertyId });
   await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
-  redirect(`/contribute/next?propertyId=${propertyId}&event=photo`);
+  redirect(`/contribute/next?propertyId=${propertyId}&event=photo${unlock}`);
 }
 
 export async function submitManagerIntakeAction(formData: FormData) {

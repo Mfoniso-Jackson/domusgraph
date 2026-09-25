@@ -11,11 +11,17 @@ const labels: Record<string, string> = {
   feedback: "Your feedback helps shape the next housing problem we solve."
 };
 
-export default async function NextContributionPage({ searchParams }: { searchParams: Promise<{ propertyId?: string; event?: string }> }) {
-  const { propertyId, event = "contribution" } = await searchParams;
+export default async function NextContributionPage({ searchParams }: { searchParams: Promise<{ propertyId?: string; event?: string; unlock?: string; unlockLabel?: string }> }) {
+  const { propertyId, event = "contribution", unlock, unlockLabel } = await searchParams;
+  const unlockWeight = Number(unlock);
+  const body =
+    unlockWeight > 0 && unlockLabel
+      ? `Once verified, this will be the first "${unlockLabel}" signal on this property — completing that part of its history (+${unlockWeight}% toward a fuller record).`
+      : "DomusGraph grows when one housing signal leads to the next useful signal.";
+
   return (
     <PageShell>
-      <SectionHeader eyebrow="Contribution saved" title={labels[event] ?? "Your contribution has been saved."} body="DomusGraph grows when one housing signal leads to the next useful signal." />
+      <SectionHeader eyebrow="Contribution saved" title={labels[event] ?? "Your contribution has been saved."} body={body} />
       <ContributionPrompt propertyId={propertyId} source={`post_${event}`} />
       <div className="mt-6 flex flex-wrap gap-3">
         {propertyId ? <Link className="button-primary" href={`/property/${propertyId}`}>Return to property</Link> : null}
