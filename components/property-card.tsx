@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { Zap } from "lucide-react";
 import type { PropertySummary } from "@/lib/data";
 
 export function PropertyCard({ property }: { property: PropertySummary }) {
+  const hasReviews = Boolean(property.average_rating);
+  const observationCount = property.observation_count ?? 0;
+
   return (
     <Link
       href={`/property/${property.id}`}
@@ -14,11 +18,22 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
             {[property.address_line_2, property.city, property.postcode].filter(Boolean).join(", ")}
           </p>
         </div>
-        <div className="rounded-md bg-mist px-3 py-1 font-mono text-sm font-semibold tabular-nums text-ink">
-          {property.average_rating ? property.average_rating.toFixed(1) : "New"}
-        </div>
+        {hasReviews ? (
+          <div className="shrink-0 rounded-md bg-mist px-3 py-1 font-mono text-sm font-semibold tabular-nums text-ink">{property.average_rating!.toFixed(1)}</div>
+        ) : property.epc_rating ? (
+          <div className="flex shrink-0 items-center gap-1 rounded-md bg-mist px-3 py-1 text-sm font-semibold text-ink">
+            <Zap className="h-3.5 w-3.5 text-signal" aria-hidden="true" />
+            {property.epc_rating}
+          </div>
+        ) : (
+          <div className="shrink-0 rounded-md bg-mist px-3 py-1 text-sm font-semibold text-slate">New</div>
+        )}
       </div>
       <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+        <div>
+          <div className="font-mono font-semibold tabular-nums text-ink">{observationCount}</div>
+          <div className="text-slate">Public records</div>
+        </div>
         <div>
           <div className="font-mono font-semibold tabular-nums text-ink">{property.review_count}</div>
           <div className="text-slate">Reviews</div>
@@ -26,10 +41,6 @@ export function PropertyCard({ property }: { property: PropertySummary }) {
         <div>
           <div className="font-mono font-semibold tabular-nums text-ink">{property.issue_count}</div>
           <div className="text-slate">Issues</div>
-        </div>
-        <div>
-          <div className="font-semibold text-ink">{property.last_activity ? new Date(property.last_activity).toLocaleDateString("en-GB") : "No activity"}</div>
-          <div className="text-slate">Last activity</div>
         </div>
       </div>
     </Link>

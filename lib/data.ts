@@ -17,6 +17,8 @@ export type PropertySummary = {
   photo_count?: number;
   has_details?: boolean;
   last_activity: string | null;
+  observation_count?: number;
+  epc_rating?: string | null;
 };
 
 export const getCurrentUser = cache(async () => {
@@ -27,19 +29,21 @@ export const getCurrentUser = cache(async () => {
 });
 
 export async function getPlatformStats() {
-  if (!isConfigured()) return { properties: 0, reviews: 0, issues: 0, verifiedEvents: 0 };
+  if (!isConfigured()) return { properties: 0, reviews: 0, issues: 0, verifiedEvents: 0, observations: 0 };
   const supabase = createSupabaseAdminClient();
-  const [properties, reviews, issues, verifiedEvents] = await Promise.all([
+  const [properties, reviews, issues, verifiedEvents, observations] = await Promise.all([
     supabase.from("properties").select("id", { count: "exact", head: true }),
     supabase.from("reviews").select("id", { count: "exact", head: true }).eq("moderation_status", "approved"),
     supabase.from("maintenance_issues").select("id", { count: "exact", head: true }).eq("moderation_status", "approved"),
-    supabase.from("housing_events").select("id", { count: "exact", head: true }).eq("is_verified", true)
+    supabase.from("housing_events").select("id", { count: "exact", head: true }).eq("is_verified", true),
+    supabase.from("property_observations").select("id", { count: "exact", head: true })
   ]);
   return {
     properties: properties.count ?? 0,
     reviews: reviews.count ?? 0,
     issues: issues.count ?? 0,
-    verifiedEvents: verifiedEvents.count ?? 0
+    verifiedEvents: verifiedEvents.count ?? 0,
+    observations: observations.count ?? 0
   };
 }
 
