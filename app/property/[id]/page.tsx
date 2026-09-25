@@ -11,6 +11,20 @@ import { getOrFetchEpcRecords, getOrFetchLandRegistrySales } from "@/lib/observa
 
 const gbp = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
+type TimelineTag = "Public record" | "Verified" | "Reported" | "Disputed";
+
+const tagStyles: Record<TimelineTag, string> = {
+  "Public record": "bg-mist text-slate",
+  Verified: "bg-leaf/10 text-leaf",
+  Reported: "bg-mist text-slate",
+  Disputed: "border border-slate/30 text-slate"
+};
+
+// housing_events already logs review/issue/claim submissions as their own
+// entries — these get a richer dedicated timeline item instead, so the
+// generic feed only contributes events with no dedicated representation.
+const DEDICATED_EVENT_TYPES = new Set(["review_submitted", "maintenance_issue_reported", "maintenance_issue_resolved", "property_claimed"]);
+
 function average(rows: Record<string, unknown>[], key: string) {
   const values = rows.map((row) => Number(row[key])).filter(Boolean);
   if (!values.length) return "New";
@@ -30,12 +44,28 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const epcMatch = epcRecords[0] ?? null;
 
   const timeline = [
-    ...epcRecords.map((record) => ({ type: "Energy rating", icon: Zap, date: record.registrationDate, title: `Rating ${record.currentEnergyEfficiencyBand}`, body: "EPC certificate registered for this address." })),
-    ...saleRecords.map((record) => ({ type: "Sale (Land Registry)", icon: Banknote, date: record.transactionDate, title: `Sold for ${gbp.format(record.pricePaid)}`, body: "Recorded sale price, not a rental amount — HM Land Registry Price Paid Data." })),
-    ...reviews.map((review) => ({ type: "Review", icon: MessageSquare, date: review.created_at, title: `${review.overall_rating}/5 overall`, body: review.review_text })),
-    ...issues.map((issue) => ({ type: "Issue", icon: AlertTriangle, date: issue.created_at, title: `${issue.issue_type} - ${issue.severity}`, body: issue.description })),
-    ...claims.map((claim) => ({ type: "Claim", icon: Star, date: claim.created_at, title: `${claim.role} claim ${claim.claim_status}`, body: "A landlord or property operator submitted a profile claim." })),
-    ...events.map((event) => ({ type: "Housing Event", icon: Star, date: event.created_at, title: String(event.event_type).replaceAll("_", " "), body: event.is_verified ? "Verified housing event" : "Housing graph event" }))
+    ...epcRecords.map((record) => ({ type: "Energy rating", icon: Zap, date: record.registrationDate, title: `Rating ${record.currentEnergyEfficiencyBand}`, body: "EPC certificate registered for this address.", tag: "Public record" as TimelineTag })),
+    ...saleRecords.map((record) => ({ type: "Sale (Land Registry)", icon: Banknote, date: record.transactionDate, title: `Sold for ${gbp.format(record.pricePaid)}`, body: "Recorded sale price, not a rental amount — HM Land Registry Price Paid Data.", tag: "Public record" as TimelineTag })),
+    ...reviews.map((review) => ({ type: "Review", icon: MessageSquare, date: review.created_at, title: `${review.overall_rating}/5 overall`, body: review.review_text, tag: (review.verification_level === "verified" ? "Verified" : "Reported") as TimelineTag })),
+    ...issues.map((issue) => ({ type: "Issue", icon: AlertTriangle, date: issue.created_at, title: `${issue.issue_type} - ${issue.severity}`, body: issue.description, tag: (issue.verification_level === "verified" ? "Verified" : "Reported") as TimelineTag })),
+    ...claims.map((claim) => ({
+      type: "Claim",
+      icon: Star,
+      date: claim.created_at,
+      title: `${claim.role} claim ${claim.claim_status}`,
+      body: "A landlord or property operator submitted a profile claim.",
+      tag: (claim.verification_level === "verified" ? "Verified" : claim.claim_status === "rejected" ? "Disputed" : "Reported") as TimelineTag
+    })),
+    ...events
+      .filter((event) => !DEDICATED_EVENT_TYPES.has(String(event.event_type)))
+      .map((event) => ({
+        type: "Housing Event",
+        icon: Star,
+        date: event.created_at,
+        title: String(event.event_type).replaceAll("_", " "),
+        body: "Housing graph event.",
+        tag: (event.verification_status === "verified" ? "Verified" : event.verification_status === "disputed" ? "Disputed" : "Reported") as TimelineTag
+      }))
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const issueCounts = issues.reduce<Record<string, number>>((acc, issue) => {
@@ -135,9 +165,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 const Icon = item.icon;
                 return (
                   <article key={`${item.type}-${index}`} className="border-l-2 border-slate/20 pl-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-signal">
+                    <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-signal">
                       <Icon className="h-4 w-4" aria-hidden="true" />
                       {item.type} · {new Date(item.date).toLocaleDateString("en-GB")}
+                      <span className={`rounded-full px-2 py-0.5 font-mono text-[11px] font-semibold ${tagStyles[item.tag]}`}>{item.tag}</span>
                     </div>
                     <h3 className="mt-1 font-semibold text-ink">{item.title}</h3>
                     <p className="mt-1 line-clamp-3 text-sm leading-6 text-slate">{item.body}</p>

@@ -335,7 +335,12 @@ export async function moderateClaimAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  const { data, error } = await supabase.from("property_claims").update({ claim_status: status }).eq("id", id).select("property_id, user_id, email").single();
+  const { data, error } = await supabase
+    .from("property_claims")
+    .update({ claim_status: status, verification_level: status === "approved" ? "verified" : "unverified" })
+    .eq("id", id)
+    .select("property_id, user_id, email")
+    .single();
   if (error) throw error;
   await setHousingEventVerified(id, status === "approved");
   await notifyContributorOfModeration({ type: "claim", status, userId: data?.user_id, email: data?.email, propertyId: data?.property_id ?? null });

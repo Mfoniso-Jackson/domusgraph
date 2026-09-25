@@ -47,8 +47,11 @@ export async function logHousingEvent(args: {
   });
 }
 
+export type VerificationStatus = "reported" | "verified" | "disputed" | "corrected";
+
 export async function setHousingEventVerified(sourceId: string, isVerified: boolean) {
   if (!isConfigured()) return;
   const supabase = createSupabaseAdminClient();
-  await supabase.from("housing_events").update({ is_verified: isVerified }).eq("source_id", sourceId);
+  const verificationStatus: VerificationStatus = isVerified ? "verified" : "disputed";
+  await supabase.from("housing_events").update({ is_verified: isVerified, verification_status: verificationStatus }).eq("source_id", sourceId);
 }
