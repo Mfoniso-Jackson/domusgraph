@@ -9,8 +9,8 @@ export function CompletionScore({ property }: { property: CompletionInput }) {
     <section className="panel">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-ink">Housing Profile Completeness</h2>
-          <p className="mt-1 text-sm text-slate">Complete profiles create stronger housing graph signals.</p>
+          <h2 className="text-xl font-semibold text-ink">Housing History Completeness</h2>
+          <p className="mt-1 text-sm text-slate">How much of this property&apos;s history DomusGraph has on record — not a rating of the property itself.</p>
         </div>
         <div className="font-mono text-3xl font-bold tabular-nums text-signal">{completion.score}%</div>
       </div>

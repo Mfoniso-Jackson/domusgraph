@@ -20,6 +20,13 @@ const tagStyles: Record<TimelineTag, string> = {
   Disputed: "border border-slate/30 text-slate"
 };
 
+const confidenceForTag: Record<TimelineTag, string> = {
+  "Public record": "High — sourced directly from a government register.",
+  Verified: "High — corroborated by an admin or a second independent source.",
+  Reported: "Medium — a single contributor's account, not yet independently verified.",
+  Disputed: "Low — this was reviewed and rejected, or is actively contested."
+};
+
 // housing_events already logs review/issue/claim submissions as their own
 // entries — these get a richer dedicated timeline item instead, so the
 // generic feed only contributes events with no dedicated representation.
@@ -44,17 +51,55 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const epcMatch = epcRecords[0] ?? null;
 
   const timeline = [
-    ...epcRecords.map((record) => ({ type: "Energy rating", icon: Zap, date: record.registrationDate, title: `Rating ${record.currentEnergyEfficiencyBand}`, body: "EPC certificate registered for this address.", tag: "Public record" as TimelineTag })),
-    ...saleRecords.map((record) => ({ type: "Sale (Land Registry)", icon: Banknote, date: record.transactionDate, title: `Sold for ${gbp.format(record.pricePaid)}`, body: "Recorded sale price, not a rental amount — HM Land Registry Price Paid Data.", tag: "Public record" as TimelineTag })),
-    ...reviews.map((review) => ({ type: "Review", icon: MessageSquare, date: review.created_at, title: `${review.overall_rating}/5 overall`, body: review.review_text, tag: (review.verification_level === "verified" ? "Verified" : "Reported") as TimelineTag })),
-    ...issues.map((issue) => ({ type: "Issue", icon: AlertTriangle, date: issue.created_at, title: `${issue.issue_type} - ${issue.severity}`, body: issue.description, tag: (issue.verification_level === "verified" ? "Verified" : "Reported") as TimelineTag })),
+    ...epcRecords.map((record) => ({
+      type: "Energy rating",
+      icon: Zap,
+      date: record.registrationDate,
+      title: `Rating ${record.currentEnergyEfficiencyBand}`,
+      body: "EPC certificate registered for this address.",
+      tag: "Public record" as TimelineTag,
+      source: "EPC Register (gov.uk)",
+      sourceUrl: epcCertificateUrl(record.certificateNumber)
+    })),
+    ...saleRecords.map((record) => ({
+      type: "Sale (Land Registry)",
+      icon: Banknote,
+      date: record.transactionDate,
+      title: `Sold for ${gbp.format(record.pricePaid)}`,
+      body: "Recorded sale price, not a rental amount — HM Land Registry Price Paid Data.",
+      tag: "Public record" as TimelineTag,
+      source: "HM Land Registry Price Paid Data",
+      sourceUrl: "https://landregistry.data.gov.uk/"
+    })),
+    ...reviews.map((review) => ({
+      type: "Review",
+      icon: MessageSquare,
+      date: review.created_at,
+      title: `${review.overall_rating}/5 overall`,
+      body: review.review_text,
+      tag: (review.verification_level === "verified" ? "Verified" : "Reported") as TimelineTag,
+      source: "Former tenant contribution",
+      sourceUrl: null as string | null
+    })),
+    ...issues.map((issue) => ({
+      type: "Issue",
+      icon: AlertTriangle,
+      date: issue.created_at,
+      title: `${issue.issue_type} - ${issue.severity}`,
+      body: issue.description,
+      tag: (issue.verification_level === "verified" ? "Verified" : "Reported") as TimelineTag,
+      source: "Tenant-reported maintenance record",
+      sourceUrl: null as string | null
+    })),
     ...claims.map((claim) => ({
       type: "Claim",
       icon: Star,
       date: claim.created_at,
       title: `${claim.role} claim ${claim.claim_status}`,
       body: "A landlord or property operator submitted a profile claim.",
-      tag: (claim.verification_level === "verified" ? "Verified" : claim.claim_status === "rejected" ? "Disputed" : "Reported") as TimelineTag
+      tag: (claim.verification_level === "verified" ? "Verified" : claim.claim_status === "rejected" ? "Disputed" : "Reported") as TimelineTag,
+      source: "Landlord or property operator submission",
+      sourceUrl: null as string | null
     })),
     ...events
       .filter((event) => !DEDICATED_EVENT_TYPES.has(String(event.event_type)))
@@ -64,7 +109,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         date: event.created_at,
         title: String(event.event_type).replaceAll("_", " "),
         body: "Housing graph event.",
-        tag: (event.verification_status === "verified" ? "Verified" : event.verification_status === "disputed" ? "Disputed" : "Reported") as TimelineTag
+        tag: (event.verification_status === "verified" ? "Verified" : event.verification_status === "disputed" ? "Disputed" : "Reported") as TimelineTag,
+        source: "DomusGraph housing event log",
+        sourceUrl: null as string | null
       }))
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -172,6 +219,33 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     </div>
                     <h3 className="mt-1 font-semibold text-ink">{item.title}</h3>
                     <p className="mt-1 line-clamp-3 text-sm leading-6 text-slate">{item.body}</p>
+                    <details className="group mt-2">
+                      <summary className="cursor-pointer list-none text-xs font-semibold text-signal underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/40 focus-visible:rounded">
+                        How do we know?
+                      </summary>
+                      <div className="mt-2 grid gap-1.5 rounded-md bg-mist p-3 text-xs">
+                        <div>
+                          <span className="font-semibold text-ink">Source: </span>
+                          <span className="text-slate">
+                            {item.sourceUrl ? (
+                              <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-signal hover:underline">
+                                {item.source}
+                              </a>
+                            ) : (
+                              item.source
+                            )}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-ink">Confidence: </span>
+                          <span className="text-slate">{confidenceForTag[item.tag]}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-ink">Date: </span>
+                          <span className="text-slate">{new Date(item.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</span>
+                        </div>
+                      </div>
+                    </details>
                   </article>
                 );
               })}
