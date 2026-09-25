@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -21,8 +22,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans antialiased">
         <header className="border-b border-slate/15 bg-paper/90">
           <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-            <Link href="/" className="text-lg font-bold tracking-tight text-ink">
-              DomusGraph
+            <Link href="/" className="flex items-center">
+              <Image src="/logo.svg" alt="DomusGraph" width={172} height={32} priority className="h-7 w-auto" />
             </Link>
             <div className="flex items-center gap-3 text-sm font-medium text-slate">
               <Link href="/search" className="hover:text-signal">Search</Link>
