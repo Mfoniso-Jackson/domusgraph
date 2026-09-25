@@ -50,12 +50,17 @@ function tokenSetsEqual(a: Set<string>, b: Set<string>) {
   return true;
 }
 
-export function findMatchingEpcRecord(records: EpcRecord[], addressLine1: string, addressLine2?: string | null) {
+// A property can have several certificates over time (re-assessed on sale/re-let).
+// Returns every matching certificate, most recent first.
+export function findMatchingEpcRecords(records: EpcRecord[], addressLine1: string, addressLine2?: string | null) {
   const ourTokens = normalizeAddressTokens(`${addressLine1} ${addressLine2 ?? ""}`);
-  const matches = records.filter((record) => tokenSetsEqual(normalizeAddressTokens(`${record.addressLine1} ${record.addressLine2 ?? ""}`), ourTokens));
-  if (!matches.length) return null;
-  // A property can have several certificates over time (re-assessed on sale/re-let); take the most recent.
-  return matches.reduce((latest, record) => (record.registrationDate > latest.registrationDate ? record : latest));
+  return records
+    .filter((record) => tokenSetsEqual(normalizeAddressTokens(`${record.addressLine1} ${record.addressLine2 ?? ""}`), ourTokens))
+    .sort((a, b) => (a.registrationDate > b.registrationDate ? -1 : 1));
+}
+
+export function findMatchingEpcRecord(records: EpcRecord[], addressLine1: string, addressLine2?: string | null) {
+  return findMatchingEpcRecords(records, addressLine1, addressLine2)[0] ?? null;
 }
 
 export function epcCertificateUrl(certificateNumber: string) {

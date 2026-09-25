@@ -6,7 +6,8 @@ import { EmptyState, PageShell, Stat } from "@/components/ui";
 import { getPropertyDetail } from "@/lib/data";
 import { CompletionScore, ContributionPrompt, TrustBadges } from "@/components/growth";
 import { logAnalyticsEvent } from "@/lib/events";
-import { epcCertificateUrl, findMatchingEpcRecord, isEpcConfigured, searchEpcByPostcode } from "@/lib/epc";
+import { epcCertificateUrl } from "@/lib/epc";
+import { getOrFetchEpcRecords } from "@/lib/observations";
 
 function average(rows: Record<string, unknown>[], key: string) {
   const values = rows.map((row) => Number(row[key])).filter(Boolean);
@@ -20,10 +21,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const { property, reviews, issues, claims, events, photos } = await getPropertyDetail(id);
   if (!property) notFound();
 
-  const epcRecords = property.postcode && isEpcConfigured() ? await searchEpcByPostcode(property.postcode) : [];
-  const epcMatch = epcRecords.length ? findMatchingEpcRecord(epcRecords, property.address_line_1, property.address_line_2) : null;
+  const epcRecords = await getOrFetchEpcRecords(id, property.postcode, property.address_line_1, property.address_line_2);
+  const epcMatch = epcRecords[0] ?? null;
 
   const timeline = [
+    ...epcRecords.map((record) => ({ type: "Energy rating", icon: Zap, date: record.registrationDate, title: `Rating ${record.currentEnergyEfficiencyBand}`, body: "EPC certificate registered for this address." })),
     ...reviews.map((review) => ({ type: "Review", icon: MessageSquare, date: review.created_at, title: `${review.overall_rating}/5 overall`, body: review.review_text })),
     ...issues.map((issue) => ({ type: "Issue", icon: AlertTriangle, date: issue.created_at, title: `${issue.issue_type} - ${issue.severity}`, body: issue.description })),
     ...claims.map((claim) => ({ type: "Claim", icon: Star, date: claim.created_at, title: `${claim.role} claim ${claim.claim_status}`, body: "A landlord or property operator submitted a profile claim." })),
