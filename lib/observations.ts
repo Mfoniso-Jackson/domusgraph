@@ -1,5 +1,6 @@
 import { createSupabaseAdminClient, isConfigured } from "@/lib/supabase";
 import { epcCertificateUrl, findMatchingEpcRecords, isEpcConfigured, searchEpcByPostcode, type EpcRecord } from "@/lib/epc";
+import { findMatchingSales, searchPricePaidByPostcode, type PricePaidRecord } from "@/lib/land-registry";
 
 export type PropertyObservation = {
   id: string;
@@ -75,5 +76,48 @@ export async function getOrFetchEpcRecords(propertyId: string, postcode: string 
   const epcRecords = await searchEpcByPostcode(postcode);
   const matches = findMatchingEpcRecords(epcRecords, addressLine1, addressLine2);
   if (matches.length) await persistEpcObservations(propertyId, matches);
+  return matches;
+}
+
+/**
+ * Sale price history from HM Land Registry Price Paid Data. Conservatively
+ * matched (see findMatchingSales) — always labelled as a sale price, never
+ * conflated with rent anywhere this is displayed.
+ */
+export async function persistLandRegistrySales(propertyId: string, records: PricePaidRecord[]) {
+  if (!isConfigured() || !records.length) return;
+  const supabase = createSupabaseAdminClient();
+  const rows = records.map((record) => ({
+    property_id: propertyId,
+    observation_type: "land_registry_sale",
+    observed_at: new Date(record.transactionDate).toISOString().slice(0, 10),
+    source: "hm_land_registry",
+    source_url: "https://landregistry.data.gov.uk/",
+    source_ref: record.transactionId,
+    data: { price_paid: record.pricePaid, property_type: record.propertyType, new_build: record.newBuild }
+  }));
+  await supabase.from("property_observations").upsert(rows, { onConflict: "property_id,observation_type,source_ref", ignoreDuplicates: true });
+}
+
+export async function getOrFetchLandRegistrySales(propertyId: string, postcode: string | null, addressLine1: string, addressLine2?: string | null): Promise<PricePaidRecord[]> {
+  const existing = await getPropertyObservations(propertyId);
+  const saleObservations = existing.filter((observation) => observation.observation_type === "land_registry_sale");
+  if (saleObservations.length) {
+    return saleObservations.map((observation) => ({
+      transactionId: observation.source_ref ?? "",
+      pricePaid: Number(observation.data.price_paid ?? 0),
+      transactionDate: observation.observed_at ?? observation.created_at,
+      paon: null,
+      saon: null,
+      street: null,
+      propertyType: (observation.data.property_type as string | null) ?? null,
+      newBuild: Boolean(observation.data.new_build)
+    }));
+  }
+
+  if (!postcode) return [];
+  const records = await searchPricePaidByPostcode(postcode);
+  const matches = findMatchingSales(records, addressLine1, addressLine2);
+  if (matches.length) await persistLandRegistrySales(propertyId, matches);
   return matches;
 }

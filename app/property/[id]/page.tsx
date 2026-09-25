@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, MessageSquare, Star, Zap } from "lucide-react";
+import { AlertTriangle, Banknote, MessageSquare, Star, Zap } from "lucide-react";
 import { EmptyState, PageShell, Stat } from "@/components/ui";
 import { getPropertyDetail } from "@/lib/data";
 import { CompletionScore, ContributionPrompt, TrustBadges } from "@/components/growth";
 import { logAnalyticsEvent } from "@/lib/events";
 import { epcCertificateUrl } from "@/lib/epc";
-import { getOrFetchEpcRecords } from "@/lib/observations";
+import { getOrFetchEpcRecords, getOrFetchLandRegistrySales } from "@/lib/observations";
+
+const gbp = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
 function average(rows: Record<string, unknown>[], key: string) {
   const values = rows.map((row) => Number(row[key])).filter(Boolean);
@@ -21,11 +23,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const { property, reviews, issues, claims, events, photos } = await getPropertyDetail(id);
   if (!property) notFound();
 
-  const epcRecords = await getOrFetchEpcRecords(id, property.postcode, property.address_line_1, property.address_line_2);
+  const [epcRecords, saleRecords] = await Promise.all([
+    getOrFetchEpcRecords(id, property.postcode, property.address_line_1, property.address_line_2),
+    getOrFetchLandRegistrySales(id, property.postcode, property.address_line_1, property.address_line_2)
+  ]);
   const epcMatch = epcRecords[0] ?? null;
 
   const timeline = [
     ...epcRecords.map((record) => ({ type: "Energy rating", icon: Zap, date: record.registrationDate, title: `Rating ${record.currentEnergyEfficiencyBand}`, body: "EPC certificate registered for this address." })),
+    ...saleRecords.map((record) => ({ type: "Sale (Land Registry)", icon: Banknote, date: record.transactionDate, title: `Sold for ${gbp.format(record.pricePaid)}`, body: "Recorded sale price, not a rental amount — HM Land Registry Price Paid Data." })),
     ...reviews.map((review) => ({ type: "Review", icon: MessageSquare, date: review.created_at, title: `${review.overall_rating}/5 overall`, body: review.review_text })),
     ...issues.map((issue) => ({ type: "Issue", icon: AlertTriangle, date: issue.created_at, title: `${issue.issue_type} - ${issue.severity}`, body: issue.description })),
     ...claims.map((claim) => ({ type: "Claim", icon: Star, date: claim.created_at, title: `${claim.role} claim ${claim.claim_status}`, body: "A landlord or property operator submitted a profile claim." })),
