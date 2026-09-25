@@ -56,6 +56,13 @@ export async function searchProperties(query = "") {
   return data ?? [];
 }
 
+export async function getFeaturedProperties(city: string, limit = 3) {
+  if (!isConfigured()) return [] as PropertySummary[];
+  const supabase = createSupabaseAdminClient();
+  const { data } = await supabase.from("property_summary").select("*").ilike("city", `${city}%`).order("created_at", { ascending: false }).limit(limit);
+  return data ?? [];
+}
+
 export async function getSearchDiscovery() {
   if (!isConfigured()) return { recentSearches: [], popularProperties: [] as PropertySummary[] };
   const supabase = createSupabaseAdminClient();
