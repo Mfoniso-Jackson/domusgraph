@@ -108,7 +108,7 @@ export async function getDashboardData() {
     supabase.from("property_claims").select("id, property_id, created_at, claim_status").eq("user_id", user.id),
     supabase.from("housing_events").select("id, property_id, created_at, event_type, is_verified").eq("actor_id", user.id),
     supabase.from("feedback_responses").select("id, created_at, source").eq("user_id", user.id),
-    supabase.from("referrals").select("id, property_id, created_at, referral_code, reputation_points_awarded").eq("created_by", user.id)
+    supabase.from("referrals").select("id, property_id, created_at, referral_code, reputation_points_awarded, accepted_at, invite_type, recipient_email").eq("created_by", user.id)
   ]);
   const propertyIds = new Set<string>([
     ...(reviews.data ?? []).map((item) => item.property_id),

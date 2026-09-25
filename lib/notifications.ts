@@ -53,6 +53,16 @@ export async function notifyAdminsOfPendingItem(input: { type: PendingItemType; 
   });
 }
 
+export async function notifyReferralInvite(input: { recipientEmail: string; inviteType: string; referralCode: string; propertyAddress?: string | null }) {
+  const link = `${siteUrl()}/invite/${input.referralCode}`;
+  const context = input.propertyAddress ? ` for ${input.propertyAddress}` : "";
+  await sendEmail({
+    to: input.recipientEmail,
+    subject: "You've been invited to add housing history on DomusGraph",
+    html: `<p>Someone invited you to help build a property's housing history${context} as a ${input.inviteType.toLowerCase()}.</p><p><a href="${link}">Open the invite</a></p><p>DomusGraph is a structured record of tenancy experiences, maintenance issues, and property history — no passwords, just a magic link.</p>`
+  });
+}
+
 export async function notifyContributorOfModeration(input: {
   type: PendingItemType;
   status: string;

@@ -1,10 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { REFERRAL_COOKIE } from "@/lib/referral-cookie";
+
+const REFERRAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+function applyReferralCookie(request: NextRequest, response: NextResponse) {
+  const inviteMatch = request.nextUrl.pathname.match(/^\/invite\/([a-zA-Z0-9_-]+)/);
+  if (inviteMatch) {
+    response.cookies.set(REFERRAL_COOKIE, inviteMatch[1], { maxAge: REFERRAL_COOKIE_MAX_AGE, path: "/", sameSite: "lax" });
+  }
+  return response;
+}
 
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) return NextResponse.next();
+  if (!supabaseUrl || !supabaseAnonKey) return applyReferralCookie(request, NextResponse.next());
 
   let response = NextResponse.next({ request });
 
@@ -23,7 +34,7 @@ export async function middleware(request: NextRequest) {
 
   await supabase.auth.getUser();
 
-  return response;
+  return applyReferralCookie(request, response);
 }
 
 export const config = {

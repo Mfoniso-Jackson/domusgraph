@@ -7,8 +7,9 @@ import { claimSchema, feedbackSchema, formObject, issueSchema, managerIntakeSche
 import { getCurrentUser } from "@/lib/data";
 import { logAnalyticsEvent, logHousingEvent, setHousingEventVerified } from "@/lib/events";
 import { enforceRateLimit } from "@/lib/rate-limit";
-import { notifyAdminsOfPendingItem, notifyContributorOfModeration } from "@/lib/notifications";
+import { notifyAdminsOfPendingItem, notifyContributorOfModeration, notifyReferralInvite } from "@/lib/notifications";
 import { lookupPostcode } from "@/lib/postcode";
+import { attributeReferralIfPresent } from "@/lib/referrals";
 
 async function requireSupabase(rateLimitAction?: string) {
   if (!isConfigured()) {
@@ -98,6 +99,7 @@ export async function submitReviewAction(propertyId: string, formData: FormData)
     sourceId: data.id
   });
   await notifyAdminsOfPendingItem({ type: "review", propertyId });
+  await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=review`);
 }
@@ -126,6 +128,7 @@ export async function submitIssueAction(propertyId: string, formData: FormData) 
     sourceId: data.id
   });
   await notifyAdminsOfPendingItem({ type: "issue", propertyId });
+  await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=issue`);
 }
@@ -154,6 +157,7 @@ export async function submitClaimAction(propertyId: string, formData: FormData) 
     sourceId: data.id
   });
   await notifyAdminsOfPendingItem({ type: "claim", propertyId });
+  await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=claim`);
 }
@@ -195,6 +199,7 @@ export async function submitPhotoAction(propertyId: string, formData: FormData) 
   await logAnalyticsEvent("photo_completed", { property_id: propertyId });
   await logHousingEvent({ propertyId, actorType: "renter", eventType: "photo_uploaded", metadata: {}, sourceId: data.id });
   await notifyAdminsOfPendingItem({ type: "photo", propertyId });
+  await attributeReferralIfPresent(user.id);
   revalidatePath(`/property/${propertyId}`);
   redirect(`/contribute/next?propertyId=${propertyId}&event=photo`);
 }
@@ -259,6 +264,14 @@ export async function createReferralAction(formData: FormData) {
   if (error) throw error;
   await logAnalyticsEvent("referral_created", { invite_type: parsed.invite_type, property_id: parsed.property_id });
   await logHousingEvent({ propertyId: parsed.property_id || null, eventType: "referral_created", metadata: { invite_type: parsed.invite_type } });
+  if (parsed.recipient_email) {
+    let propertyAddress: string | null = null;
+    if (parsed.property_id) {
+      const { data: property } = await supabase.from("properties").select("address_line_1").eq("id", parsed.property_id).maybeSingle();
+      propertyAddress = property?.address_line_1 ?? null;
+    }
+    await notifyReferralInvite({ recipientEmail: parsed.recipient_email, inviteType: parsed.invite_type, referralCode: code, propertyAddress });
+  }
   redirect(`/invite/${code}`);
 }
 

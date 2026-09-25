@@ -34,10 +34,18 @@ export default async function DashboardPage() {
           verifiedIssues={issues.filter((item) => item.verification_level === "verified").length}
         />
       </div>
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+      <div className="mt-8 grid gap-6 lg:grid-cols-4">
         <Activity title="Recent reviews" rows={reviews.map((item) => ({ id: item.id, label: `${item.overall_rating}/5 review`, href: `/property/${item.property_id}` }))} />
         <Activity title="Recent issues" rows={issues.map((item) => ({ id: item.id, label: `${item.issue_type} - ${item.status}`, href: `/property/${item.property_id}` }))} />
         <Activity title="Claims" rows={claims.map((item) => ({ id: item.id, label: `Claim ${item.claim_status}`, href: `/property/${item.property_id}` }))} />
+        <Activity
+          title="Your invites"
+          rows={referrals.map((item) => ({
+            id: item.id,
+            label: `${item.invite_type} - ${item.accepted_at ? "contributed" : "pending"}`,
+            href: `/invite/${item.referral_code}`
+          }))}
+        />
       </div>
       <div className="mt-8">
         <ContributionPrompt source="dashboard" />
