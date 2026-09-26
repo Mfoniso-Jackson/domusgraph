@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/seed-properties",
       "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/cron/refresh-observations",
+      "schedule": "0 7 * * 1"
     }
   ]
 }

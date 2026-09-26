@@ -32,7 +32,7 @@ export async function getPropertyObservations(propertyId: string): Promise<Prope
  * safe to call on every property page view or from a backfill script.
  */
 export async function persistEpcObservations(propertyId: string, records: EpcRecord[]) {
-  if (!isConfigured() || !records.length) return;
+  if (!isConfigured() || !records.length) return 0;
   const supabase = createSupabaseAdminClient();
 
   const rows = records.map((record) => ({
@@ -44,12 +44,15 @@ export async function persistEpcObservations(propertyId: string, records: EpcRec
     source_ref: record.certificateNumber,
     data: { energy_band: record.currentEnergyEfficiencyBand, uprn: record.uprn }
   }));
-  await supabase.from("property_observations").upsert(rows, { onConflict: "property_id,observation_type,source_ref", ignoreDuplicates: true });
+  // With ON CONFLICT DO NOTHING (ignoreDuplicates), the select() RETURNING
+  // clause only reflects rows actually inserted — a free count of what's new.
+  const { data: newRows } = await supabase.from("property_observations").upsert(rows, { onConflict: "property_id,observation_type,source_ref", ignoreDuplicates: true }).select("id");
 
   const uprn = records.find((record) => record.uprn)?.uprn;
   if (uprn) {
     await supabase.from("properties").update({ uprn }).eq("id", propertyId).is("uprn", null);
   }
+  return newRows?.length ?? 0;
 }
 
 /**
@@ -85,7 +88,7 @@ export async function getOrFetchEpcRecords(propertyId: string, postcode: string 
  * conflated with rent anywhere this is displayed.
  */
 export async function persistLandRegistrySales(propertyId: string, records: PricePaidRecord[]) {
-  if (!isConfigured() || !records.length) return;
+  if (!isConfigured() || !records.length) return 0;
   const supabase = createSupabaseAdminClient();
   const rows = records.map((record) => ({
     property_id: propertyId,
@@ -96,7 +99,8 @@ export async function persistLandRegistrySales(propertyId: string, records: Pric
     source_ref: record.transactionId,
     data: { price_paid: record.pricePaid, property_type: record.propertyType, new_build: record.newBuild }
   }));
-  await supabase.from("property_observations").upsert(rows, { onConflict: "property_id,observation_type,source_ref", ignoreDuplicates: true });
+  const { data: newRows } = await supabase.from("property_observations").upsert(rows, { onConflict: "property_id,observation_type,source_ref", ignoreDuplicates: true }).select("id");
+  return newRows?.length ?? 0;
 }
 
 export async function getOrFetchLandRegistrySales(propertyId: string, postcode: string | null, addressLine1: string, addressLine2?: string | null): Promise<PricePaidRecord[]> {
