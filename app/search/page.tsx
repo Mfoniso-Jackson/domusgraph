@@ -1,5 +1,5 @@
-import { Search as SearchIcon } from "lucide-react";
 import { PropertyCard } from "@/components/property-card";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { PageShell, SelectField, TextField } from "@/components/ui";
 import { createPropertyAction, logSearchAction } from "@/lib/actions";
 import { getPlatformStats, getSearchDiscovery, searchProperties } from "@/lib/data";
@@ -34,17 +34,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       </div>
 
       <form action={logSearchAction} className="panel mb-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate" aria-hidden="true" />
-          <input
-            className="field"
-            style={{ paddingLeft: "2.25rem" }}
-            name="q"
-            defaultValue={q}
-            placeholder="Enter address, postcode, or partial match"
-            aria-label="Search address or postcode"
-          />
-        </div>
+        <AddressAutocomplete defaultValue={q} />
         <button className="button-primary sm:w-fit" type="submit">Search</button>
       </form>
 
