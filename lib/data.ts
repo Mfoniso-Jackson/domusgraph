@@ -111,12 +111,17 @@ export const getPropertyDetail = cache(async (id: string) => {
 
 export async function getDashboardData() {
   const user = await getCurrentUser();
-  if (!user || !isConfigured()) return { user, reviews: [], issues: [], claims: [], propertyIds: new Set<string>(), housingEvents: [], feedback: [], referrals: [] };
+  if (!user || !isConfigured())
+    return { user, reviews: [], issues: [], claims: [], photos: [], propertyIds: new Set<string>(), housingEvents: [], feedback: [], referrals: [] };
   const supabase = await createSupabaseServerClient();
-  const [reviews, issues, claims, housingEvents, feedback, referrals] = await Promise.all([
-    supabase.from("reviews").select("id, property_id, created_at, overall_rating, verification_level").eq("user_id", user.id),
-    supabase.from("maintenance_issues").select("id, property_id, created_at, issue_type, status, verification_level").eq("user_id", user.id),
+  const [reviews, issues, claims, photos, housingEvents, feedback, referrals] = await Promise.all([
+    supabase.from("reviews").select("id, property_id, created_at, overall_rating, verification_level, moderation_status").eq("user_id", user.id),
+    supabase
+      .from("maintenance_issues")
+      .select("id, property_id, created_at, issue_type, status, verification_level, moderation_status")
+      .eq("user_id", user.id),
     supabase.from("property_claims").select("id, property_id, created_at, claim_status").eq("user_id", user.id),
+    supabase.from("property_photos").select("id, property_id, created_at, moderation_status").eq("user_id", user.id),
     supabase.from("housing_events").select("id, property_id, created_at, event_type, is_verified").eq("actor_id", user.id),
     supabase.from("feedback_responses").select("id, created_at, source").eq("user_id", user.id),
     supabase.from("referrals").select("id, property_id, created_at, referral_code, reputation_points_awarded, accepted_at, invite_type, recipient_email").eq("created_by", user.id)
@@ -124,9 +129,31 @@ export async function getDashboardData() {
   const propertyIds = new Set<string>([
     ...(reviews.data ?? []).map((item) => item.property_id),
     ...(issues.data ?? []).map((item) => item.property_id),
-    ...(claims.data ?? []).map((item) => item.property_id)
+    ...(claims.data ?? []).map((item) => item.property_id),
+    ...(photos.data ?? []).map((item) => item.property_id)
   ]);
-  return { user, reviews: reviews.data ?? [], issues: issues.data ?? [], claims: claims.data ?? [], propertyIds, housingEvents: housingEvents.data ?? [], feedback: feedback.data ?? [], referrals: referrals.data ?? [] };
+  return {
+    user,
+    reviews: reviews.data ?? [],
+    issues: issues.data ?? [],
+    claims: claims.data ?? [],
+    photos: photos.data ?? [],
+    propertyIds,
+    housingEvents: housingEvents.data ?? [],
+    feedback: feedback.data ?? [],
+    referrals: referrals.data ?? []
+  };
+}
+
+export async function getOwnPendingSubmissions(propertyId: string) {
+  const user = await getCurrentUser();
+  if (!user || !isConfigured()) return { reviews: [], issues: [] };
+  const supabase = createSupabaseAdminClient();
+  const [reviews, issues] = await Promise.all([
+    supabase.from("reviews").select("*").eq("property_id", propertyId).eq("user_id", user.id).eq("moderation_status", "pending"),
+    supabase.from("maintenance_issues").select("*").eq("property_id", propertyId).eq("user_id", user.id).eq("moderation_status", "pending")
+  ]);
+  return { reviews: reviews.data ?? [], issues: issues.data ?? [] };
 }
 
 export async function getAdminData() {

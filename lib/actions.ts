@@ -312,6 +312,46 @@ export async function signOutAction() {
   redirect("/");
 }
 
+async function withdrawOwnSubmission(table: "reviews" | "maintenance_issues" | "property_claims", statusColumn: "moderation_status" | "claim_status", id: string) {
+  const user = await requireUser();
+  const supabase = await requireSupabase();
+  const { data: row } = await supabase.from(table).select(`id, user_id, property_id, ${statusColumn}`).eq("id", id).single();
+  if (!row || row.user_id !== user.id) throw new Error("Submission not found.");
+  const status = (row as Record<string, unknown>)[statusColumn];
+  if (status !== "pending") throw new Error("Only a submission still awaiting moderation can be withdrawn.");
+  const { error } = await supabase.from(table).delete().eq("id", id);
+  if (error) throw error;
+  revalidatePath("/dashboard");
+  if (row.property_id) revalidatePath(`/property/${row.property_id}`);
+}
+
+export async function withdrawReviewAction(formData: FormData) {
+  await withdrawOwnSubmission("reviews", "moderation_status", String(formData.get("id")));
+}
+
+export async function withdrawIssueAction(formData: FormData) {
+  await withdrawOwnSubmission("maintenance_issues", "moderation_status", String(formData.get("id")));
+}
+
+export async function withdrawClaimAction(formData: FormData) {
+  await withdrawOwnSubmission("property_claims", "claim_status", String(formData.get("id")));
+}
+
+export async function withdrawPhotoAction(formData: FormData) {
+  const user = await requireUser();
+  const supabase = await requireSupabase();
+  const id = String(formData.get("id"));
+  const { data: row } = await supabase.from("property_photos").select("id, user_id, property_id, image_url, moderation_status").eq("id", id).single();
+  if (!row || row.user_id !== user.id) throw new Error("Submission not found.");
+  if (row.moderation_status !== "pending") throw new Error("Only a submission still awaiting moderation can be withdrawn.");
+  const path = String(row.image_url).split("/property-photos/")[1];
+  if (path) await supabase.storage.from("property-photos").remove([path]);
+  const { error } = await supabase.from("property_photos").delete().eq("id", id);
+  if (error) throw error;
+  revalidatePath("/dashboard");
+  if (row.property_id) revalidatePath(`/property/${row.property_id}`);
+}
+
 export async function moderateReviewAction(formData: FormData) {
   const supabase = await requireAdmin();
   const id = String(formData.get("id"));

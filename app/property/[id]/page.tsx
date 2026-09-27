@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, Banknote, MessageSquare, Star, Zap } from "lucide-react";
 import { EmptyState, PageShell, Stat } from "@/components/ui";
-import { getPropertyDetail } from "@/lib/data";
+import { getOwnPendingSubmissions, getPropertyDetail } from "@/lib/data";
 import { CompletionScore, ContributionPrompt, TrustBadges } from "@/components/growth";
 import { ShareButton } from "@/components/share-button";
 import { logAnalyticsEvent } from "@/lib/events";
@@ -35,20 +35,22 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 const gbp = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
-type TimelineTag = "Public record" | "Verified" | "Reported" | "Disputed";
+type TimelineTag = "Public record" | "Verified" | "Reported" | "Disputed" | "Pending";
 
 const tagStyles: Record<TimelineTag, string> = {
   "Public record": "bg-mist text-slate",
   Verified: "bg-leaf/10 text-leaf",
   Reported: "bg-mist text-slate",
-  Disputed: "border border-slate/30 text-slate"
+  Disputed: "border border-slate/30 text-slate",
+  Pending: "border border-signal/30 text-signal"
 };
 
 const confidenceForTag: Record<TimelineTag, string> = {
   "Public record": "High — sourced directly from a government register.",
   Verified: "High — corroborated by an admin or a second independent source.",
   Reported: "Medium — a single contributor's account, not yet independently verified.",
-  Disputed: "Low — this was reviewed and rejected, or is actively contested."
+  Disputed: "Low — this was reviewed and rejected, or is actively contested.",
+  Pending: "Awaiting moderation — only visible to you until an admin reviews it."
 };
 
 // housing_events already logs review/issue/claim submissions as their own
@@ -68,9 +70,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const { property, reviews, issues, claims, events, photos } = await getPropertyDetail(id);
   if (!property) notFound();
 
-  const [epcRecords, saleRecords] = await Promise.all([
+  const [epcRecords, saleRecords, ownPending] = await Promise.all([
     getOrFetchEpcRecords(id, property.postcode, property.address_line_1, property.address_line_2),
-    getOrFetchLandRegistrySales(id, property.postcode, property.address_line_1, property.address_line_2)
+    getOrFetchLandRegistrySales(id, property.postcode, property.address_line_1, property.address_line_2),
+    getOwnPendingSubmissions(id)
   ]);
   const epcMatch = epcRecords[0] ?? null;
 
@@ -136,8 +139,30 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         tag: (event.verification_status === "verified" ? "Verified" : event.verification_status === "disputed" ? "Disputed" : "Reported") as TimelineTag,
         source: "DomusGraph housing event log",
         sourceUrl: null as string | null
-      }))
+      })),
+    ...ownPending.reviews.map((review) => ({
+      type: "Review",
+      icon: MessageSquare,
+      date: review.created_at,
+      title: `${review.overall_rating}/5 overall (your submission)`,
+      body: review.review_text,
+      tag: "Pending" as TimelineTag,
+      source: "Your submission",
+      sourceUrl: null as string | null
+    })),
+    ...ownPending.issues.map((issue) => ({
+      type: "Issue",
+      icon: AlertTriangle,
+      date: issue.created_at,
+      title: `${issue.issue_type} - ${issue.severity} (your submission)`,
+      body: issue.description,
+      tag: "Pending" as TimelineTag,
+      source: "Your submission",
+      sourceUrl: null as string | null
+    }))
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const hasContributorContent = reviews.length + issues.length + claims.length > 0;
 
   const issueCounts = issues.reduce<Record<string, number>>((acc, issue) => {
     acc[issue.issue_type] = (acc[issue.issue_type] ?? 0) + 1;
@@ -259,6 +284,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
         <div className="panel">
           <h2 className="text-xl font-semibold text-ink">Timeline</h2>
+          {timeline.length && !hasContributorContent ? (
+            <p className="mt-3 text-sm text-slate">
+              Public records only so far — no tenant reviews or maintenance reports yet.{" "}
+              <Link href={`/property/${id}/review`} className="font-semibold text-signal hover:underline">
+                Be the first to share what you know
+              </Link>
+              .
+            </p>
+          ) : null}
           {timeline.length ? (
             <div className="mt-5 grid gap-4">
               {timeline.map((item, index) => {
