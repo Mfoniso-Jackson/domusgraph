@@ -1,7 +1,7 @@
 // Backfills property_observations with HM Land Registry Price Paid Data
 // (sale history) for existing properties. Conservative matching: only a
 // clean house/flat-number match is persisted, matching the same principle
-// as the EPC backfill — no guessing. Idempotent, safe to re-run.
+// as the EPC backfill, no guessing. Idempotent, safe to re-run.
 //
 // Usage: node --env-file=.env.local scripts/backfill-land-registry-observations.mjs [--dry-run]
 
@@ -117,4 +117,4 @@ for (const [postcode, propsAtPostcode] of byPostcode) {
 }
 
 console.log(`\nDone. ${observationsWritten} observations written across ${propertiesMatched} matched properties, ${noMatch} properties with no Land Registry match.`);
-if (dryRun) console.log("(dry run — no writes made)");
+if (dryRun) console.log("(dry run, no writes made)");

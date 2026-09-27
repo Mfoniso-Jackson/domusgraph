@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!property) return {};
 
   const addressLabel = [property.address_line_1, property.city, property.postcode].filter(Boolean).join(", ");
-  const title = `${property.address_line_1} — Housing History | DomusGraph`;
+  const title = `${property.address_line_1}: Housing History | DomusGraph`;
   const description = property.observation_count
     ? `${property.observation_count} public record${property.observation_count === 1 ? "" : "s"} and ${reviews.length} tenant review${reviews.length === 1 ? "" : "s"} for ${addressLabel}. See the history before you rent.`
     : `Housing history for ${addressLabel}. See what's known before you rent, and add what you know.`;
@@ -46,15 +46,15 @@ const tagStyles: Record<TimelineTag, string> = {
 };
 
 const confidenceForTag: Record<TimelineTag, string> = {
-  "Public record": "High — sourced directly from a government register.",
-  Verified: "High — corroborated by an admin or a second independent source.",
-  Reported: "Medium — a single contributor's account, not yet independently verified.",
-  Disputed: "Low — this was reviewed and rejected, or is actively contested.",
-  Pending: "Awaiting moderation — only visible to you until an admin reviews it."
+  "Public record": "High. Sourced directly from a government register.",
+  Verified: "High. Corroborated by an admin or a second independent source.",
+  Reported: "Medium. A single contributor's account, not yet independently verified.",
+  Disputed: "Low. This was reviewed and rejected, or is actively contested.",
+  Pending: "Awaiting moderation. Only visible to you until an admin reviews it."
 };
 
 // housing_events already logs review/issue/claim submissions as their own
-// entries — these get a richer dedicated timeline item instead, so the
+// entries. These get a richer dedicated timeline item instead, so the
 // generic feed only contributes events with no dedicated representation.
 const DEDICATED_EVENT_TYPES = new Set(["review_submitted", "maintenance_issue_reported", "maintenance_issue_resolved", "property_claimed"]);
 
@@ -93,7 +93,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       icon: Banknote,
       date: record.transactionDate,
       title: `Sold for ${gbp.format(record.pricePaid)}`,
-      body: "Recorded sale price, not a rental amount — HM Land Registry Price Paid Data.",
+      body: "Recorded sale price, not a rental amount. HM Land Registry Price Paid Data.",
       tag: "Public record" as TimelineTag,
       source: "HM Land Registry Price Paid Data",
       sourceUrl: "https://landregistry.data.gov.uk/"
@@ -222,7 +222,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 Energy rating {epcMatch.currentEnergyEfficiencyBand}
               </a>
             ) : null}
-            <ShareButton url={propertyUrl} title={`${property.address_line_1} — Housing History | DomusGraph`} />
+            <ShareButton url={propertyUrl} title={`${property.address_line_1}: Housing History | DomusGraph`} />
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -286,7 +286,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           <h2 className="text-xl font-semibold text-ink">Timeline</h2>
           {timeline.length && !hasContributorContent ? (
             <p className="mt-3 text-sm text-slate">
-              Public records only so far — no tenant reviews or maintenance reports yet.{" "}
+              Public records only so far. No tenant reviews or maintenance reports yet.{" "}
               <Link href={`/property/${id}/review`} className="font-semibold text-signal hover:underline">
                 Be the first to share what you know
               </Link>

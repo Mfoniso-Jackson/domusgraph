@@ -8,10 +8,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // "Verified Slate" brand palette — see brand.md. Theme-aware tokens are
+        // "Verified Slate" brand palette. See brand.md. Theme-aware tokens are
         // backed by CSS variables (light values in :root, dark values in .dark)
         // so existing classes like `text-ink` or `border-slate/20` adapt to dark
-        // mode automatically — no per-usage `dark:` variants needed.
+        // mode automatically, no per-usage `dark:` variants needed.
         ink: withOpacity("--color-ink"),
         slate: withOpacity("--color-slate"),
         leaf: withOpacity("--color-leaf"),

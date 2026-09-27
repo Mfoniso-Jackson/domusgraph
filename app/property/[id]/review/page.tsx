@@ -50,7 +50,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
             label="What should the next tenant know?"
             name="review_text"
             minLength={20}
-            hint="At least 20 characters — specifics help future renters most."
+            hint="At least 20 characters. Specifics help future renters most."
           />
         </div>
         <fieldset className="md:col-span-2">

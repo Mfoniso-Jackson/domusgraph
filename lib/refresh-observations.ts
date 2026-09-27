@@ -6,9 +6,9 @@ import { persistEpcObservations, persistLandRegistrySales } from "@/lib/observat
 /**
  * Turns the two verified-clean, one-off backfills (EPC, Land Registry) into
  * a real recurring crawler: scheduled, idempotent (persistence is deduped on
- * (property_id, observation_type, source_ref)), change-detecting — a new EPC
+ * (property_id, observation_type, source_ref)), change-detecting (a new EPC
  * certificate or a newly recorded sale gets picked up on the next run; an
- * already-seen one is silently skipped. No new source, no scraping — just
+ * already-seen one is silently skipped). No new source, no scraping, just
  * the existing clean connectors run continuously instead of once.
  */
 export async function refreshPropertyObservations() {

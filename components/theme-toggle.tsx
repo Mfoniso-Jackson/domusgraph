@@ -19,7 +19,7 @@ export function ThemeToggle() {
     try {
       localStorage.setItem("theme", next ? "dark" : "light");
     } catch {
-      // localStorage unavailable (private mode, blocked storage) — theme just won't persist
+      // localStorage unavailable (private mode, blocked storage): theme just won't persist
     }
   }
 

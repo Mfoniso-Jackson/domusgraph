@@ -5,7 +5,7 @@ import { REFERRAL_COOKIE } from "@/lib/referral-cookie";
 /**
  * Best-effort: if the current visitor arrived via a referral link (cookie set by
  * middleware on /invite/[code]) and hasn't already been credited, mark that
- * referral accepted. Never throws — attribution must not block the action that
+ * referral accepted. Never throws: attribution must not block the action that
  * triggered it (a review/issue/claim/photo submission).
  */
 export async function attributeReferralIfPresent(currentUserId: string | null | undefined) {

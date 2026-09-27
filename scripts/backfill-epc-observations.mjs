@@ -1,6 +1,6 @@
 // Backfills property_observations (every historical EPC certificate, not
 // just the latest) and properties.uprn for existing properties that were
-// seeded before this table existed. Idempotent — safe to re-run.
+// seeded before this table existed. Idempotent: safe to re-run.
 //
 // Usage: node --env-file=.env.local scripts/backfill-epc-observations.mjs [--dry-run]
 
@@ -100,4 +100,4 @@ for (const [index, property] of properties.entries()) {
 }
 
 console.log(`\nDone. ${observationsWritten} observations written, ${uprnsSet} UPRNs set, ${noMatch} properties with no EPC match.`);
-if (dryRun) console.log("(dry run — no writes made)");
+if (dryRun) console.log("(dry run, no writes made)");

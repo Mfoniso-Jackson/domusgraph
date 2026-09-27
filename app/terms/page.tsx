@@ -1,7 +1,7 @@
 import { PageShell, SectionHeader } from "@/components/ui";
 
 export const metadata = {
-  title: "Terms of Service — DomusGraph"
+  title: "Terms of Service | DomusGraph"
 };
 
 export default function TermsPage() {
@@ -21,7 +21,7 @@ export default function TermsPage() {
 
         <Section title="2. Accounts">
           <p>
-            Some actions — leaving a review, reporting a maintenance issue, or claiming a property — require signing
+            Some actions (leaving a review, reporting a maintenance issue, or claiming a property) require signing
             in with a magic link sent to your email. You must provide a real, working email address you control and
             keep it accurate. You&apos;re responsible for activity that happens under your account. Don&apos;t create
             an account to impersonate someone else, and don&apos;t create multiple accounts to evade moderation or
@@ -35,7 +35,7 @@ export default function TermsPage() {
             <li>What you submit is truthful and based on your own direct experience of the property.</li>
             <li>
               You will not post content that is false, defamatory, harassing, or that you have no genuine basis to
-              make — including allegations about a landlord, letting agent, or property manager that you cannot
+              make, including allegations about a landlord, letting agent, or property manager that you cannot
               support with your own experience.
             </li>
             <li>You will not post another person&apos;s private or personal information without their consent.</li>
@@ -44,7 +44,7 @@ export default function TermsPage() {
           <p>
             Submitted content defaults to a pending state and is reviewed before it becomes publicly visible.
             Approval of a review or report is a moderation decision, not a certification that its contents are
-            factually accurate — DomusGraph does not independently investigate claims made in user content.
+            factually accurate. DomusGraph does not independently investigate claims made in user content.
           </p>
         </Section>
 

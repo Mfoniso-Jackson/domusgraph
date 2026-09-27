@@ -32,7 +32,7 @@ export function getPropertyCompletion(input: CompletionInput) {
 /**
  * A submission only counts toward property_summary once an admin approves
  * it (reviews/issues/photos/claims are all moderation-gated), so a fresh
- * submission never actually changes the completeness score yet — showing
+ * submission never actually changes the completeness score yet. Showing
  * an already-moved score would be dishonest. This tells the contributor
  * what their submission will unlock once verified, without claiming it
  * already happened.

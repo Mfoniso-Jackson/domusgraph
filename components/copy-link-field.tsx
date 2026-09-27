@@ -12,7 +12,7 @@ export function CopyLinkField({ value, label }: { value: string; label: string }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard API unavailable (e.g. non-HTTPS or blocked) — the field is still selectable/copyable by hand.
+      // Clipboard API unavailable (e.g. non-HTTPS or blocked): the field is still selectable/copyable by hand.
     }
   }
 

@@ -30,7 +30,7 @@ export function AddressAutocomplete({ defaultValue }: { defaultValue: string }) 
         setOpen(data.length > 0);
         setActiveIndex(-1);
       } catch {
-        // network hiccup — plain form submit on Enter/Search still works
+        // network hiccup, plain form submit on Enter/Search still works
       }
     }, 200);
     return () => {

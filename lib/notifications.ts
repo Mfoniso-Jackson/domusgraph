@@ -59,7 +59,7 @@ export async function notifyReferralInvite(input: { recipientEmail: string; invi
   await sendEmail({
     to: input.recipientEmail,
     subject: "You've been invited to add housing history on DomusGraph",
-    html: `<p>Someone invited you to help build a property's housing history${context} as a ${input.inviteType.toLowerCase()}.</p><p><a href="${link}">Open the invite</a></p><p>DomusGraph is a structured record of tenancy experiences, maintenance issues, and property history — no passwords, just a magic link.</p>`
+    html: `<p>Someone invited you to help build a property's housing history${context} as a ${input.inviteType.toLowerCase()}.</p><p><a href="${link}">Open the invite</a></p><p>DomusGraph is a structured record of tenancy experiences, maintenance issues, and property history. No passwords, just a magic link.</p>`
   });
 }
 

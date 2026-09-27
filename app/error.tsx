@@ -17,7 +17,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <AlertTriangle className="mx-auto h-10 w-10 text-signal" aria-hidden="true" />
         <h1 className="mt-4 text-xl font-semibold text-ink">Something went wrong</h1>
         <p className="mt-2 text-sm leading-6 text-slate">
-          That didn&apos;t go through — often it&apos;s a field that didn&apos;t pass validation. Nothing you entered was lost; try again.
+          That didn&apos;t go through, often because a field didn&apos;t pass validation. Nothing you entered was lost; try again.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button type="button" className="button-primary" onClick={() => reset()}>

@@ -28,7 +28,7 @@ export async function getPropertyObservations(propertyId: string): Promise<Prope
 
 /**
  * Persists every matched EPC certificate as a property_observations row (not
- * just the latest) and backfills properties.uprn on first match. Idempotent —
+ * just the latest) and backfills properties.uprn on first match. Idempotent:
  * safe to call on every property page view or from a backfill script.
  */
 export async function persistEpcObservations(propertyId: string, records: EpcRecord[]) {
@@ -45,7 +45,7 @@ export async function persistEpcObservations(propertyId: string, records: EpcRec
     data: { energy_band: record.currentEnergyEfficiencyBand, uprn: record.uprn }
   }));
   // With ON CONFLICT DO NOTHING (ignoreDuplicates), the select() RETURNING
-  // clause only reflects rows actually inserted — a free count of what's new.
+  // clause only reflects rows actually inserted: a free count of what's new.
   const { data: newRows } = await supabase.from("property_observations").upsert(rows, { onConflict: "property_id,observation_type,source_ref", ignoreDuplicates: true }).select("id");
 
   const uprn = records.find((record) => record.uprn)?.uprn;
@@ -84,7 +84,7 @@ export async function getOrFetchEpcRecords(propertyId: string, postcode: string 
 
 /**
  * Sale price history from HM Land Registry Price Paid Data. Conservatively
- * matched (see findMatchingSales) — always labelled as a sale price, never
+ * matched (see findMatchingSales), always labelled as a sale price, never
  * conflated with rent anywhere this is displayed.
  */
 export async function persistLandRegistrySales(propertyId: string, records: PricePaidRecord[]) {

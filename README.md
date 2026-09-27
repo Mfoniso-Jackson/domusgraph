@@ -37,7 +37,7 @@ RESEND_API_KEY=
 EMAIL_FROM=DomusGraph <onboarding@resend.dev>
 ```
 
-`RESEND_API_KEY` is optional — without it, email sends are silently skipped (same graceful-fallback pattern as Supabase). Without a verified sending domain on Resend, sandbox mode can only deliver to the Resend account's own email address.
+`RESEND_API_KEY` is optional: without it, email sends are silently skipped (same graceful-fallback pattern as Supabase). Without a verified sending domain on Resend, sandbox mode can only deliver to the Resend account's own email address.
 
 Run the SQL migrations in order:
 
@@ -128,7 +128,7 @@ The data model deliberately normalizes issue categories, response times, propert
 
 ## Seed Data
 
-`npm run seed:properties -- [council] [count] [--dry-run]` populates real property profiles (address, postcode, city — no reviews) from the government EPC register, so search isn't empty before real users arrive. Defaults to 200 Cambridge addresses. Safe to re-run: skips addresses already in the database. This only ever creates address records, never reviews, issues, or claims — those must come from real people, since fabricating them would violate the platform's own Terms of Service.
+`npm run seed:properties -- [council] [count] [--dry-run]` populates real property profiles (address, postcode, city, no reviews) from the government EPC register, so search isn't empty before real users arrive. Defaults to 200 Cambridge addresses. Safe to re-run: skips addresses already in the database. This only ever creates address records, never reviews, issues, or claims. Those must come from real people, since fabricating them would violate the platform's own Terms of Service.
 
 ## Data and Moderation
 

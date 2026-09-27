@@ -1,7 +1,7 @@
 import { PageShell, SectionHeader } from "@/components/ui";
 
 export const metadata = {
-  title: "Privacy Policy — DomusGraph"
+  title: "Privacy Policy | DomusGraph"
 };
 
 export default function PrivacyPage() {
@@ -30,11 +30,11 @@ export default function PrivacyPage() {
 
         <Section title="3. Why we process it">
           <ul className="ml-5 list-disc space-y-2">
-            <li><strong>To provide the service</strong> — creating your account, publishing your contributions after moderation, showing you your dashboard.</li>
-            <li><strong>To moderate content</strong> — reviewing pending submissions before they&apos;re public, and to investigate disputes.</li>
-            <li><strong>To communicate with you</strong> — sign-in links, and notifying you when your submission is approved or rejected.</li>
-            <li><strong>To prevent abuse</strong> — rate limiting and fraud/spam prevention.</li>
-            <li><strong>To fix bugs</strong> — error monitoring when something goes wrong.</li>
+            <li><strong>To provide the service:</strong> creating your account, publishing your contributions after moderation, showing you your dashboard.</li>
+            <li><strong>To moderate content:</strong> reviewing pending submissions before they&apos;re public, and to investigate disputes.</li>
+            <li><strong>To communicate with you:</strong> sign-in links, and notifying you when your submission is approved or rejected.</li>
+            <li><strong>To prevent abuse:</strong> rate limiting and fraud/spam prevention.</li>
+            <li><strong>To fix bugs:</strong> error monitoring when something goes wrong.</li>
           </ul>
           <p>
             Our legal basis is performance of a contract (providing the service you signed up for) and legitimate
@@ -45,10 +45,10 @@ export default function PrivacyPage() {
         <Section title="4. Who we share it with">
           <p>We use the following processors to run DomusGraph. None of them are permitted to use your data for their own purposes.</p>
           <ul className="ml-5 list-disc space-y-2">
-            <li><strong>Supabase</strong> — database hosting and authentication.</li>
-            <li><strong>Resend</strong> — sends sign-in links and notification emails on our behalf.</li>
-            <li><strong>Sentry</strong> — error monitoring, so we can find and fix bugs. Sentry may receive technical details about the error (e.g. a stack trace) but we do not send review or issue content to it.</li>
-            <li><strong>Vercel</strong> — hosts and serves the application.</li>
+            <li><strong>Supabase:</strong> database hosting and authentication.</li>
+            <li><strong>Resend:</strong> sends sign-in links and notification emails on our behalf.</li>
+            <li><strong>Sentry:</strong> error monitoring, so we can find and fix bugs. Sentry may receive technical details about the error (e.g. a stack trace) but we do not send review or issue content to it.</li>
+            <li><strong>Vercel:</strong> hosts and serves the application.</li>
           </ul>
           <p>
             We do not sell your data, and we do not share it with advertisers. Some of these processors operate

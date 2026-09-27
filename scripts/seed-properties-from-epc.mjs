@@ -1,5 +1,5 @@
 // Seeds real property profiles (address + postcode only, no reviews) from the
-// government EPC register for a given council area. Safe to re-run — skips
+// government EPC register for a given council area. Safe to re-run: skips
 // addresses already in the database.
 //
 // Usage: node --env-file=.env.local scripts/seed-properties-from-epc.mjs [council] [count] [--dry-run]

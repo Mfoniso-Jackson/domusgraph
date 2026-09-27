@@ -16,7 +16,7 @@ export default async function NextContributionPage({ searchParams }: { searchPar
   const unlockWeight = Number(unlock);
   const body =
     unlockWeight > 0 && unlockLabel
-      ? `Once verified, this will be the first "${unlockLabel}" signal on this property — completing that part of its history (+${unlockWeight}% toward a fuller record).`
+      ? `Once verified, this will be the first "${unlockLabel}" signal on this property, completing that part of its history (+${unlockWeight}% toward a fuller record).`
       : "DomusGraph grows when one housing signal leads to the next useful signal.";
 
   return (

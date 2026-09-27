@@ -5,7 +5,7 @@
 :root {
   color-scheme: light;
 
-  /* "Verified Slate" palette, light mode — RGB triples for Tailwind's
+  /* "Verified Slate" palette, light mode. RGB triples for Tailwind's
      rgb(var(--x) / <alpha-value>) opacity-modifier pattern. See brand.md. */
   --color-ink: 9 16 21;
   --color-slate: 70 88 101;
@@ -49,7 +49,7 @@ textarea {
   color: #ffffff;
 }
 
-/* Branded focus ring for plain links — buttons and .field define their own */
+/* Branded focus ring for plain links; buttons and .field define their own */
 a:focus-visible {
   outline: 2px solid rgb(var(--color-signal));
   outline-offset: 2px;

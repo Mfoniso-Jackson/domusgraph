@@ -14,7 +14,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <p className="mb-2 text-sm font-semibold uppercase text-signal">Property search</p>
         <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Search Cambridge. See what a listing won&apos;t show you.</h1>
         <p className="mt-3 text-base leading-7 text-slate">
-          Look up an address or postcode for its public record and tenant history. Not listed yet? Create the profile — it takes seconds, and it starts the history for whoever searches it next.
+          Look up an address or postcode for its public record and tenant history. Not listed yet? Create the profile: it takes seconds, and it starts the history for whoever searches it next.
         </p>
       </div>
 
@@ -72,7 +72,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <h2 className="text-xl font-semibold text-ink">{q ? `Nothing at "${q}" yet` : "No matching property yet"}</h2>
           <p className="mt-2 text-sm text-slate">
             {q
-              ? "That's not a gap in our search — it's a gap in the record. Create the profile below and it's there the next time someone looks."
+              ? "That's not a gap in our search. It's a gap in the record. Create the profile below and it's there the next time someone looks."
               : "Create a lightweight profile. Reviews, issues, and claims can attach to it immediately."}
           </p>
           <form action={createPropertyAction} className="mt-5 grid gap-4 md:grid-cols-2">

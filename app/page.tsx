@@ -5,11 +5,11 @@ import { PropertyCard } from "@/components/property-card";
 import { getFeaturedProperties, getPlatformStats } from "@/lib/data";
 
 const graphItems = [
-  ["Properties", Building2, "Every address gets one permanent profile — not a new listing each time it's re-rented."],
+  ["Properties", Building2, "Every address gets one permanent profile, not a new listing each time it's re-rented."],
   ["Reviews", MessageSquare, "Structured tenant experiences tied to a verified account, not anonymous noise."],
   ["Maintenance Issues", Hammer, "What broke, how fast it got fixed, and whether it stayed fixed."],
   ["Landlords", KeyRound, "Owners and managers can claim a property and respond directly."],
-  ["Outcomes", ClipboardCheck, "Deposit returned, dispute resolved, would-rent-again — what a listing photo can't show you."]
+  ["Outcomes", ClipboardCheck, "Deposit returned, dispute resolved, would-rent-again: what a listing photo can't show you."]
 ] as const;
 
 const audiences = [
@@ -50,7 +50,7 @@ export default async function HomePage() {
           </p>
           <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-ink sm:text-6xl">Know the home before you rent it.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-slate">
-            DomusGraph is building a structured record of every rental property in Cambridge — history, landlord responsiveness, and hidden issues, before you sign a tenancy.
+            DomusGraph is building a structured record of every rental property in Cambridge: history, landlord responsiveness, and hidden issues, before you sign a tenancy.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/search" className="button-primary">Search a property</Link>
@@ -64,7 +64,7 @@ export default async function HomePage() {
             <ShieldCheck className="h-8 w-8 text-signal" aria-hidden="true" />
             <div>
               <h2 className="font-semibold text-ink">{hasData ? "Cambridge housing graph snapshot" : "Just getting started"}</h2>
-              <p className="text-sm text-slate">{hasData ? "Real totals from structured tenant and manager signals." : "No properties tracked yet — be the first to add one."}</p>
+              <p className="text-sm text-slate">{hasData ? "Real totals from structured tenant and manager signals." : "No properties tracked yet. Be the first to add one."}</p>
             </div>
           </div>
           {hasData ? (
@@ -84,7 +84,7 @@ export default async function HomePage() {
           ) : (
             <div className="mt-5 grid gap-3">
               <p className="text-sm leading-6 text-slate">
-                DomusGraph is brand new — every property profile, review, and maintenance report on here comes from a real person&apos;s real experience. Nothing here is fabricated or filled in for show.
+                DomusGraph is brand new. Every property profile, review, and maintenance report on here comes from a real person&apos;s real experience. Nothing here is fabricated or filled in for show.
               </p>
               <Link href="/search" className="button-primary w-fit">Add the first property</Link>
             </div>
@@ -97,7 +97,7 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold text-ink">Now covering Cambridge</h2>
-              <p className="mt-2 max-w-2xl text-slate">{stats.properties} real addresses, sourced from the EPC register — a starting profile for every one, ready for a real tenant&apos;s history.</p>
+              <p className="mt-2 max-w-2xl text-slate">{stats.properties} real addresses, sourced from the EPC register, a starting profile for every one, ready for a real tenant&apos;s history.</p>
             </div>
             <Link href="/city/cambridge" className="button-secondary shrink-0">Browse all {stats.properties} properties</Link>
           </div>
@@ -124,7 +124,7 @@ export default async function HomePage() {
 
       <section className="py-10">
         <h2 className="text-2xl font-bold text-ink">The Housing Graph</h2>
-        <p className="mt-2 max-w-2xl text-slate">Property, problem, response, resolution, outcome — a structured chain, not a star rating.</p>
+        <p className="mt-2 max-w-2xl text-slate">Property, problem, response, resolution, outcome: a structured chain, not a star rating.</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {graphItems.map(([label, Icon, description], index) => (
             <div

@@ -61,7 +61,7 @@ function extractLeadingNumber(address: string): string | null {
 /**
  * Conservative on purpose: only returns a match when the house/flat number
  * lines up exactly. A wrong sale price attached to the wrong property is
- * worse than no sale price at all — see the entity-resolution principle in
+ * worse than no sale price at all. See the entity-resolution principle in
  * the Cambridge Data Engine plan (never silently merge on a guess).
  */
 export function findMatchingSales(records: PricePaidRecord[], addressLine1: string, addressLine2?: string | null): PricePaidRecord[] {

@@ -12,7 +12,7 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
         await navigator.share({ title, url });
         return;
       } catch {
-        // user cancelled the native share sheet, or it's unsupported — fall through to copy
+        // user cancelled the native share sheet, or it's unsupported, fall through to copy
       }
     }
     try {
@@ -20,7 +20,7 @@ export function ShareButton({ url, title }: { url: string; title: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // clipboard unavailable — nothing to fall back to here, silently no-op
+      // clipboard unavailable, nothing to fall back to here, silently no-op
     }
   }
 

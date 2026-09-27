@@ -22,7 +22,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
       <div className="mb-8 max-w-3xl">
         <p className="mb-2 text-sm font-semibold uppercase text-signal">City housing graph</p>
         <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{label} rental intelligence</h1>
-        <p className="mt-3 text-base leading-7 text-slate">Every profile below is a permanent record for that address — public data and tenant history in one place, not a listing that disappears once it&apos;s let.</p>
+        <p className="mt-3 text-base leading-7 text-slate">Every profile below is a permanent record for that address: public data and tenant history in one place, not a listing that disappears once it&apos;s let.</p>
       </div>
 
       {properties.length ? (
