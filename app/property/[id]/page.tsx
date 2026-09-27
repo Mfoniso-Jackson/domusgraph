@@ -164,6 +164,22 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
   const hasContributorContent = reviews.length + issues.length + claims.length > 0;
 
+  const timelineYears = timeline.map((item) => new Date(item.date).getFullYear()).filter((year) => !Number.isNaN(year));
+  const earliestYear = timelineYears.length ? Math.min(...timelineYears) : null;
+  const latestYear = timelineYears.length ? Math.max(...timelineYears) : null;
+
+  const contributorDates = [...reviews, ...issues].map((item) => new Date(item.created_at).getTime()).filter((time) => !Number.isNaN(time));
+  const latestContributorDate = contributorDates.length ? new Date(Math.max(...contributorDates)) : null;
+  const monthsSinceLastContribution = latestContributorDate
+    ? (new Date().getFullYear() - latestContributorDate.getFullYear()) * 12 + (new Date().getMonth() - latestContributorDate.getMonth())
+    : null;
+
+  const historyGap = !hasContributorContent
+    ? { message: "Public records only so far. No tenant reviews or maintenance reports yet.", cta: "Be the first to share what you know" }
+    : latestContributorDate && monthsSinceLastContribution !== null && monthsSinceLastContribution >= 12
+      ? { message: `No tenant has reported anything here since ${latestContributorDate.getFullYear()}.`, cta: "Lived here recently? Add what's changed" }
+      : null;
+
   const issueCounts = issues.reduce<Record<string, number>>((acc, issue) => {
     acc[issue.issue_type] = (acc[issue.issue_type] ?? 0) + 1;
     return acc;
@@ -226,7 +242,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href={`/property/${id}/review`} className="button-primary">Leave a review</Link>
+          <Link href={`/property/${id}/review`} className="button-primary">Add what you know</Link>
           <Link href={`/property/${id}/issue`} className="button-secondary">Report an issue</Link>
           <Link href={`/property/${id}/claim`} className="button-secondary">Claim this property</Link>
           <Link href={`/property/${id}/photo`} className="button-secondary">Add a photo</Link>
@@ -283,12 +299,17 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
 
         <div className="panel">
-          <h2 className="text-xl font-semibold text-ink">Timeline</h2>
-          {timeline.length && !hasContributorContent ? (
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl font-semibold text-ink">Timeline</h2>
+            {earliestYear && latestYear ? (
+              <span className="font-mono text-xs text-slate">{earliestYear === latestYear ? earliestYear : `${earliestYear} → ${latestYear}`}</span>
+            ) : null}
+          </div>
+          {timeline.length && historyGap ? (
             <p className="mt-3 text-sm text-slate">
-              Public records only so far. No tenant reviews or maintenance reports yet.{" "}
+              {historyGap.message}{" "}
               <Link href={`/property/${id}/review`} className="font-semibold text-signal hover:underline">
-                Be the first to share what you know
+                {historyGap.cta}
               </Link>
               .
             </p>

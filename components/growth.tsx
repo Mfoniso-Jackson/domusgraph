@@ -99,18 +99,23 @@ function Metric({ label, value }: { label: string; value: number }) {
 }
 
 export function ContributionPrompt({ propertyId, source = "post_action" }: { propertyId?: string; source?: string }) {
+  const isPostContribution = Boolean(propertyId) && (source === "post_review" || source === "post_issue");
   return (
     <section className="panel">
-      <h2 className="text-2xl font-bold text-ink">Help future renters.</h2>
-      <p className="mt-2 text-sm text-slate">One more signal can make this property profile dramatically more useful.</p>
+      <h2 className="text-2xl font-bold text-ink">{isPostContribution ? "Did anyone else live here with you?" : "Help future renters."}</h2>
+      <p className="mt-2 text-sm text-slate">
+        {isPostContribution
+          ? "A former housemate's independent account makes this history more trustworthy for everyone who searches this address next."
+          : "One more signal can make this property profile dramatically more useful."}
+      </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/review`}>Leave another review</Link> : <Link className="button-secondary" href="/search">Leave a review</Link>}
+        {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/review`}>Add another account</Link> : <Link className="button-secondary" href="/search">Leave a review</Link>}
         {propertyId ? <Link className="button-secondary" href={`/property/${propertyId}/issue`}>Report another issue</Link> : <Link className="button-secondary" href="/search">Report an issue</Link>}
       </div>
       <form action={createReferralAction} className="mt-5 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
         <input type="hidden" name="property_id" value={propertyId ?? ""} />
         <label className="grid gap-2">
-          <span className="label">Invite someone</span>
+          <span className="label">{isPostContribution ? "Invite them" : "Invite someone"}</span>
           <select name="invite_type" className="field" required>
             <option>Previous tenant</option>
             <option>Neighbour</option>
