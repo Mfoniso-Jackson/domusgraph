@@ -88,7 +88,7 @@ export async function getProperty(id: string) {
   return data as PropertySummary;
 }
 
-export async function getPropertyDetail(id: string) {
+export const getPropertyDetail = cache(async (id: string) => {
   if (!isConfigured()) return { property: null, reviews: [], issues: [], claims: [], events: [], photos: [] };
   const supabase = createSupabaseAdminClient();
   const [property, reviews, issues, claims, events, photos] = await Promise.all([
@@ -107,7 +107,7 @@ export async function getPropertyDetail(id: string) {
     events: events.data ?? [],
     photos: photos.data ?? []
   };
-}
+});
 
 export async function getDashboardData() {
   const user = await getCurrentUser();

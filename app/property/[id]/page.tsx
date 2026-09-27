@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,9 +6,32 @@ import { AlertTriangle, Banknote, MessageSquare, Star, Zap } from "lucide-react"
 import { EmptyState, PageShell, Stat } from "@/components/ui";
 import { getPropertyDetail } from "@/lib/data";
 import { CompletionScore, ContributionPrompt, TrustBadges } from "@/components/growth";
+import { ShareButton } from "@/components/share-button";
 import { logAnalyticsEvent } from "@/lib/events";
 import { epcCertificateUrl } from "@/lib/epc";
 import { getOrFetchEpcRecords, getOrFetchLandRegistrySales } from "@/lib/observations";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const { property, reviews } = await getPropertyDetail(id);
+  if (!property) return {};
+
+  const addressLabel = [property.address_line_1, property.city, property.postcode].filter(Boolean).join(", ");
+  const title = `${property.address_line_1} — Housing History | DomusGraph`;
+  const description = property.observation_count
+    ? `${property.observation_count} public record${property.observation_count === 1 ? "" : "s"} and ${reviews.length} tenant review${reviews.length === 1 ? "" : "s"} for ${addressLabel}. See the history before you rent.`
+    : `Housing history for ${addressLabel}. See what's known before you rent, and add what you know.`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://domusgraph.com";
+  const url = `${siteUrl}/property/${id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, siteName: "DomusGraph", type: "website" },
+    twitter: { card: "summary", title, description }
+  };
+}
 
 const gbp = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
 
@@ -120,8 +144,36 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     return acc;
   }, {});
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://domusgraph.com";
+  const propertyUrl = `${siteUrl}/property/${id}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Residence",
+    name: property.address_line_1,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: [property.address_line_1, property.address_line_2].filter(Boolean).join(", "),
+      addressLocality: property.city ?? "Cambridge",
+      postalCode: property.postcode,
+      addressCountry: "GB"
+    },
+    url: propertyUrl,
+    ...(property.average_rating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: property.average_rating,
+            reviewCount: property.review_count,
+            bestRating: 5,
+            worstRating: 1
+          }
+        }
+      : {})
+  };
+
   return (
     <PageShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
         <div>
           <p className="mb-2 text-sm font-semibold uppercase text-signal">Property profile</p>
@@ -145,6 +197,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 Energy rating {epcMatch.currentEnergyEfficiencyBand}
               </a>
             ) : null}
+            <ShareButton url={propertyUrl} title={`${property.address_line_1} — Housing History | DomusGraph`} />
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
