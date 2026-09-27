@@ -2,9 +2,14 @@ import { z } from "zod";
 import { normalizeUkPostcode } from "@/lib/postcode";
 
 export const rating = z.coerce.number().int().min(1).max(5);
+const optionalRating = z.preprocess((value) => (value === "" ? undefined : value), rating.optional());
 export const optionalText = z.string().trim().optional().nullable();
 const optionalPropertyType = z.preprocess((value) => (value === "" ? null : value), z.enum(["Flat", "House", "HMO", "Studio", "Maisonette", "Other"]).optional().nullable());
 export const actorTypeSchema = z.enum(["Renter", "Landlord", "Letting Agent", "Property Manager"]);
+
+function optionalEnum<T extends [string, ...string[]]>(values: T) {
+  return z.preprocess((value) => (value === "" ? undefined : value), z.enum(values).optional());
+}
 
 export const propertySchema = z.object({
   address_line_1: z.string().trim().min(3, "Address is required"),
@@ -27,11 +32,11 @@ export const propertySchema = z.object({
 
 export const reviewSchema = z.object({
   overall_rating: rating,
-  maintenance_rating: rating,
-  communication_rating: rating,
-  condition_rating: rating,
-  deposit_fairness_rating: rating,
-  safety_rating: rating,
+  maintenance_rating: optionalRating,
+  communication_rating: optionalRating,
+  condition_rating: optionalRating,
+  deposit_fairness_rating: optionalRating,
+  safety_rating: optionalRating,
   review_text: z.string().trim().min(20, "Please share at least 20 characters"),
   experienced_damp: z.coerce.boolean().default(false),
   experienced_mould: z.coerce.boolean().default(false),
@@ -40,7 +45,7 @@ export const reviewSchema = z.object({
   experienced_noise: z.coerce.boolean().default(false),
   experienced_pests: z.coerce.boolean().default(false),
   experienced_electrical: z.coerce.boolean().default(false),
-  would_rent_again: z.enum(["Yes", "No", "Not sure"]),
+  would_rent_again: optionalEnum(["Yes", "No", "Not sure"]),
   move_in_month: optionalText,
   move_out_month: optionalText
 });
