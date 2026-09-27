@@ -235,7 +235,8 @@ export async function submitManagerIntakeAction(formData: FormData) {
 
 export async function submitOnboardingAction(formData: FormData) {
   const parsed = onboardingSchema.parse(formObject(formData));
-  const supabase = await requireSupabase("onboarding");
+  const supabase = await requireSupabase();
+  await enforceRateLimit("onboarding", { windowMs: 10 * 60 * 1000, max: 30 });
   const user = await getCurrentUser();
   const { error } = await supabase.from("onboarding_responses").insert({
     user_id: user?.id ?? null,

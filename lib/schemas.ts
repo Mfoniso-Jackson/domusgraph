@@ -81,6 +81,7 @@ export const managerIntakeSchema = z.object({
 export const onboardingSchema = z
   .object({
     user_type: actorTypeSchema,
+    email: z.string().trim().email("Use a valid email").optional().or(z.literal("")).nullable(),
     biggest_rental_frustration: optionalText,
     worst_housing_issue: optionalText,
     would_recommend_previous_property: z.enum(["Yes", "No", "Not sure"]).optional().nullable(),
