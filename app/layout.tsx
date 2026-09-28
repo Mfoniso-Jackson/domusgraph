@@ -32,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             <div className="hidden items-center gap-3 text-sm font-medium text-slate md:flex">
               <Link href="/search" className="hover:text-signal">Search</Link>
+              <Link href="/recover" className="hover:text-signal">Where you&apos;ve lived</Link>
               <Link href="/onboarding" className="hover:text-signal">Onboarding</Link>
               <Link href="/property-manager" className="hover:text-signal">Managers</Link>
               <Link href="/dashboard" className="hover:text-signal">Dashboard</Link>

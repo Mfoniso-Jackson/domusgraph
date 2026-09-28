@@ -85,6 +85,13 @@ export async function logSearchAction(formData: FormData) {
   redirect(`/search?q=${encodeURIComponent(query)}`);
 }
 
+export async function logRecoverSearchAction(formData: FormData) {
+  const query = String(formData.get("q") ?? "");
+  await enforceRateLimit("search", { windowMs: 60 * 1000, max: 30 });
+  await logAnalyticsEvent("recover_search", { query });
+  redirect(`/recover?q=${encodeURIComponent(query)}`);
+}
+
 export async function submitReviewAction(propertyId: string, formData: FormData) {
   const parsed = reviewSchema.parse(formObject(formData));
   const user = await requireUser();

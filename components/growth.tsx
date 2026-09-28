@@ -129,6 +129,15 @@ export function ContributionPrompt({ propertyId, source = "post_action" }: { pro
         </label>
         <button className="button-primary self-end" type="submit">Generate invite</button>
       </form>
+      {isPostContribution ? (
+        <p className="mt-5 text-sm text-slate">
+          Lived somewhere else too?{" "}
+          <Link href="/recover" className="font-semibold text-signal hover:underline">
+            Recover another home&apos;s history
+          </Link>
+          .
+        </p>
+      ) : null}
       <form action={submitFeedbackAction} className="mt-5 grid gap-3">
         <input type="hidden" name="property_id" value={propertyId ?? ""} />
         <input type="hidden" name="source" value={source} />

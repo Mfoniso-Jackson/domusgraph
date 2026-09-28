@@ -7,6 +7,7 @@ import { signOutAction } from "@/lib/actions";
 
 const links = [
   { href: "/search", label: "Search" },
+  { href: "/recover", label: "Where you've lived" },
   { href: "/onboarding", label: "Onboarding" },
   { href: "/property-manager", label: "Managers" },
   { href: "/dashboard", label: "Dashboard" }
