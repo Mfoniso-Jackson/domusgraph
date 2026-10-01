@@ -231,3 +231,58 @@ export async function getPropertiesByPostcode(postcode: string) {
   const { data } = await supabase.from("property_summary").select("*").ilike("postcode", `${term}%`).order("last_activity", { ascending: false }).limit(50);
   return data ?? [];
 }
+
+export type TimelineMoment = { date: string; label: string };
+
+const OBSERVATION_LABELS: Record<string, string> = {
+  epc: "Energy performance certificate recorded",
+  land_registry_sale: "Sold (Land Registry record)",
+  planning_application: "Planning application recorded"
+};
+
+const EVENT_LABELS: Record<string, string> = {
+  review_submitted: "Tenant review added",
+  maintenance_issue_reported: "Maintenance issue reported",
+  maintenance_issue_resolved: "Maintenance issue resolved",
+  property_claimed: "Claimed by landlord or agent",
+  landlord_response: "Landlord responded",
+  property_manager_signup: "Property manager signed up",
+  property_created: "Property profile created",
+  feedback_submitted: "Feedback submitted",
+  referral_created: "Referral sent",
+  photo_uploaded: "Photo added"
+};
+
+// Picks the property with the richest recorded history (not necessarily the
+// "best" one) to demonstrate, with real data, what a housing history actually
+// looks like once it has a few entries.
+export async function getHomepageTimelineExample() {
+  if (!isConfigured()) return null;
+  const supabase = createSupabaseAdminClient();
+  const { data: candidates } = await supabase
+    .from("property_summary")
+    .select("*")
+    .order("timeline_count", { ascending: false, nullsFirst: false })
+    .order("observation_count", { ascending: false, nullsFirst: false })
+    .limit(1);
+  const property = candidates?.[0] as PropertySummary | undefined;
+  if (!property) return null;
+
+  const [events, observations] = await Promise.all([
+    supabase.from("housing_events").select("event_type, created_at").eq("property_id", property.id).order("created_at", { ascending: true }),
+    supabase.from("property_observations").select("observation_type, observed_at, data").eq("property_id", property.id).order("observed_at", { ascending: true })
+  ]);
+
+  const moments: TimelineMoment[] = [{ date: property.created_at, label: "Property profile created" }];
+  for (const obs of observations.data ?? []) {
+    const band = obs.observation_type === "epc" ? (obs.data as { energy_band?: string } | null)?.energy_band : null;
+    const base = OBSERVATION_LABELS[obs.observation_type] ?? obs.observation_type;
+    moments.push({ date: obs.observed_at ?? property.created_at, label: band ? `${base}: band ${band}` : base });
+  }
+  for (const event of events.data ?? []) {
+    moments.push({ date: event.created_at, label: EVENT_LABELS[event.event_type] ?? event.event_type });
+  }
+  moments.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  return { property, moments };
+}

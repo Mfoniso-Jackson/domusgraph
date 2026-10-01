@@ -31,10 +31,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Logo className="h-7 w-auto" />
             </Link>
             <div className="hidden items-center gap-3 text-sm font-medium text-slate md:flex">
+              <Link href="/city/cambridge" className="hover:text-signal">Explore</Link>
               <Link href="/search" className="hover:text-signal">Search</Link>
-              <Link href="/recover" className="hover:text-signal">Where you&apos;ve lived</Link>
-              <Link href="/onboarding" className="hover:text-signal">Onboarding</Link>
-              <Link href="/property-manager" className="hover:text-signal">Managers</Link>
+              <Link href="/recover" className="hover:text-signal">My housing history</Link>
+              <Link href="/property-manager" className="hover:text-signal">For managers</Link>
               <Link href="/dashboard" className="hover:text-signal">Dashboard</Link>
               {user ? (
                 <form action={signOutAction} className="flex items-center gap-3">
@@ -61,6 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <div className="mt-3 flex gap-4">
               <Link href="/terms" className="hover:text-signal">Terms of Service</Link>
               <Link href="/privacy" className="hover:text-signal">Privacy Policy</Link>
+              <Link href="/onboarding" className="hover:text-signal">Share feedback</Link>
             </div>
           </div>
         </footer>

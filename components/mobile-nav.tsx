@@ -6,10 +6,10 @@ import { Menu, X } from "lucide-react";
 import { signOutAction } from "@/lib/actions";
 
 const links = [
+  { href: "/city/cambridge", label: "Explore" },
   { href: "/search", label: "Search" },
-  { href: "/recover", label: "Where you've lived" },
-  { href: "/onboarding", label: "Onboarding" },
-  { href: "/property-manager", label: "Managers" },
+  { href: "/recover", label: "My housing history" },
+  { href: "/property-manager", label: "For managers" },
   { href: "/dashboard", label: "Dashboard" }
 ];
 
