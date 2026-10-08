@@ -7,6 +7,7 @@ import { signOutAction } from "@/lib/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNav } from "@/components/mobile-nav";
 import { Logo } from "@/components/logo";
+import { Analytics } from "@vercel/analytics/next";
 
 const themeInitScript = `(function(){try{var s=localStorage.getItem('theme');var d=s==='dark'||(s!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
 
@@ -64,6 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
